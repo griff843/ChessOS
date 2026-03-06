@@ -1,2 +1,1 @@
-// classifier package shell
-export const packageName = "@chess-os/classifier";
+export * from "./extractors/classify-mistake";

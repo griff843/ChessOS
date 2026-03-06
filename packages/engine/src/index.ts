@@ -1,2 +1,2 @@
-// engine package shell
-export const packageName = "@chess-os/engine";
+export * from "./analysis/types";
+export * from "./stockfish/stub-engine";
