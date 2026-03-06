@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@chess-os/chess-core": ["packages/chess-core/src"],
+      "@chess-os/engine": ["packages/engine/src"],
+      "@chess-os/classifier": ["packages/classifier/src"],
+      "@chess-os/training": ["packages/training/src"],
+      "@chess-os/db": ["packages/db/src"],
+      "@chess-os/ui": ["packages/ui/src"]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "worker",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "node src/index.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "echo worker lint pending"
+  }
+}
