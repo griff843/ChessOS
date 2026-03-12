@@ -8,7 +8,9 @@ coverage
 .env.local
 .env.*.local
 *.log
+*.tsbuildinfo
 out/tmp
+out/
 data/imports/*.pgn
 data/stockfish/
 test-results/
