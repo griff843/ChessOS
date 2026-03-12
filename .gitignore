@@ -16,3 +16,5 @@ data/stockfish/
 test-results/
 playwright-report/
 *.test-bak
+data/pgn/*.pgn
+
