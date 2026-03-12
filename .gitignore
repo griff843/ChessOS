@@ -10,3 +10,7 @@ coverage
 *.log
 out/tmp
 data/imports/*.pgn
+data/stockfish/
+test-results/
+playwright-report/
+*.test-bak

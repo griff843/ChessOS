@@ -4,14 +4,23 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.29.3",
   "scripts": {
+    "start": "cd apps/web && npx next dev --webpack -p 3000",
     "build": "pnpm -r build",
-    "dev:web": "pnpm --filter web dev",
+    "dev:web": "cd apps/web && npx next dev --webpack -p 3000",
     "dev:worker": "pnpm --filter worker dev",
     "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test tests/smoke",
+    "test:e2e:headed": "playwright test --headed"
   },
   "devDependencies": {
     "@types/node": "^25.3.5",
+    "@playwright/test": "^1.58.2",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "pgn-parser": "^2.2.1"
   }
 }
