@@ -12,12 +12,12 @@ import type {
   SecondaryRepairTarget,
   RepairEvidence,
   EvidenceStatus,
+  RepertoireBranchRepair,
 } from "@/lib/types";
+import { OpeningBranchRepair } from "@/components/review/opening-branch-repair";
 import {
   AlertTriangle,
   TrendingDown,
-  Target,
-  Activity,
   CheckCircle,
 } from "lucide-react";
 
@@ -121,11 +121,17 @@ function MoveNotation({
 
 // ── Main Component ──────────────────────────────────────────────────
 
+const OPENING_CATEGORIES = new Set<DiagnosisCategory>([
+  "opening_memory_failure",
+  "opening_concept_failure",
+]);
+
 interface CoachingReviewProps {
   diagnosis: GameLossDiagnosis;
   recommendation: RepairTargetRecommendation;
   evidence: RepairEvidence | null;
   heroColor: "white" | "black" | null;
+  branchRepair?: RepertoireBranchRepair | null;
 }
 
 export function CoachingReview({
@@ -133,6 +139,7 @@ export function CoachingReview({
   recommendation,
   evidence,
   heroColor,
+  branchRepair,
 }: CoachingReviewProps) {
   // Non-loss game — clean, neutral summary
   if (!diagnosis.gameLost) {
@@ -192,249 +199,192 @@ export function CoachingReview({
     diagnosis.heroColor ??
     (losingMove.fen.split(" ")[1] === "w" ? "white" : "black");
 
+  const hasSecondaryDetail =
+    contributingFactors.length > 0 ||
+    (recommendation.repairNeeded && recommendation.secondaryTargets.length > 0) ||
+    (OPENING_CATEGORIES.has(primaryCategory) && branchRepair != null);
+
   return (
-    <div className="space-y-6">
-      {/* ── Board + Diagnosis ──────────────────────────────── */}
-      <div className="rounded-xl border border-border bg-surface">
-        <div className="flex flex-col lg:flex-row">
-          {/* Board side */}
-          <div className="flex flex-col items-center justify-center border-b border-border-subtle p-5 lg:border-b-0 lg:border-r">
-            <StaticBoard
-              fen={losingMove.fen}
-              orientation={boardOrientation}
-              size={340}
+    <div className="rounded-xl border border-border bg-surface">
+      {/* ── Board + Coaching Narrative ─────────────────────── */}
+      <div className="flex flex-col lg:flex-row">
+        {/* Board side */}
+        <div className="flex flex-col items-center justify-center border-b border-border-subtle p-5 lg:border-b-0 lg:border-r">
+          <StaticBoard
+            fen={losingMove.fen}
+            orientation={boardOrientation}
+            size={340}
+          />
+          <div className="mt-3 flex items-center gap-2 text-xs text-text-muted">
+            <TrendingDown className="h-3.5 w-3.5 text-danger" />
+            <MoveNotation
+              ply={losingMove.ply}
+              moveSan={losingMove.moveSan}
+              swingCp={losingMove.swingCp}
             />
-            <div className="mt-3 flex items-center gap-2 text-xs text-text-muted">
-              <TrendingDown className="h-3.5 w-3.5 text-danger" />
-              <MoveNotation
-                ply={losingMove.ply}
-                moveSan={losingMove.moveSan}
-                swingCp={losingMove.swingCp}
-              />
-              <span className="text-text-muted">·</span>
-              <span>
-                {losingMove.evalBefore > 0 ? "+" : ""}
-                {losingMove.evalBefore}cp → {losingMove.evalAfter > 0 ? "+" : ""}
-                {losingMove.evalAfter}cp
-              </span>
-            </div>
+            <span className="text-text-muted">·</span>
+            <span>
+              {losingMove.evalBefore > 0 ? "+" : ""}
+              {losingMove.evalBefore}cp → {losingMove.evalAfter > 0 ? "+" : ""}
+              {losingMove.evalAfter}cp
+            </span>
+          </div>
+        </div>
+
+        {/* Coaching narrative side */}
+        <div className="flex flex-1 flex-col p-5">
+          {/* Category badge */}
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-danger" />
+            <Badge variant={CATEGORY_VARIANT[primaryCategory]}>
+              {CATEGORY_LABELS[primaryCategory]}
+            </Badge>
           </div>
 
-          {/* Diagnosis side */}
-          <div className="flex flex-1 flex-col p-5">
-            {/* Section: What happened */}
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-danger" />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
-                    Primary Cause
-                  </span>
-                  <Badge variant={CATEGORY_VARIANT[primaryCategory]}>
-                    {CATEGORY_LABELS[primaryCategory]}
-                  </Badge>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-                  {explanation}
-                </p>
-              </div>
-            </div>
-
-            {/* Contributing factors */}
-            {contributingFactors.length > 0 && (
-              <div className="mt-5">
-                <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
-                  Contributing Factors
+          {/* Flowing verdict: explanation + repair target in one narrative */}
+          <p className="mt-3 text-sm leading-relaxed text-text-secondary">
+            {explanation}
+            {recommendation.repairNeeded && (
+              <>
+                {" "}Your primary training focus should be{" "}
+                <span className="font-semibold text-text-primary">
+                  {TARGET_LABELS[recommendation.primaryTarget]}
                 </span>
-                <div className="mt-2 space-y-1.5">
-                  {contributingFactors.map(
-                    (factor: ContributingFactor, i: number) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between gap-2 rounded-lg bg-surface-elevated px-3 py-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <MoveNotation
-                            ply={factor.ply}
-                            moveSan={factor.moveSan}
-                            swingCp={factor.swingCp}
-                          />
-                          <Badge variant={CATEGORY_VARIANT[factor.category]}>
-                            {CATEGORY_LABELS[factor.category]}
-                          </Badge>
-                        </div>
-                        <span className="text-xs text-text-muted">
-                          {factor.note}
-                        </span>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
+                .
+                {recommendation.primaryReason &&
+                  ` ${recommendation.primaryReason}`}
+              </>
             )}
+          </p>
 
-            {/* Stats row */}
-            <div className="mt-5 flex gap-4 rounded-lg bg-surface-elevated px-4 py-3 text-xs text-text-muted">
-              <span>
-                Mistakes:{" "}
-                <strong className="text-text-secondary">
-                  {diagnosis.mistakeCount}
-                </strong>
-              </span>
-              <span>
-                Blunders:{" "}
-                <strong className="text-danger">
-                  {diagnosis.blunderCount}
-                </strong>
-              </span>
-              <span>
-                Total CP loss:{" "}
-                <strong className="text-text-secondary">
-                  {diagnosis.totalCpLoss}
-                </strong>
-              </span>
-              <span>
-                Final eval:{" "}
-                <strong
-                  className={
-                    diagnosis.finalEvalCp < 0 ? "text-danger" : "text-success"
-                  }
-                >
-                  {diagnosis.finalEvalCp > 0 ? "+" : ""}
-                  {diagnosis.finalEvalCp}cp
-                </strong>
+          {/* Evidence inline */}
+          {evidence && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Badge variant={STATUS_VARIANT[evidence.status]}>
+                {STATUS_LABELS[evidence.status]}
+              </Badge>
+              <span className="text-xs text-text-muted">
+                {evidence.totalGamesAnalyzed > 0
+                  ? `Seen in ${evidence.totalOccurrences} of ${evidence.totalGamesAnalyzed} analyzed games`
+                  : evidence.explanation}
               </span>
             </div>
-          </div>
+          )}
+
+          {/* CTA — prominent, right after narrative */}
+          {recommendation.repairNeeded && (
+            <div className="mt-5">
+              <ReviewCTA />
+            </div>
+          )}
+
+          {!recommendation.repairNeeded && (
+            <p className="mt-4 text-xs text-text-muted">
+              {recommendation.summary}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* ── Repair Targets + Evidence + CTA ─────────────── */}
-      {recommendation.repairNeeded && (
-        <div className="rounded-xl border border-border bg-surface">
-          <div className="p-5">
-            {/* Section: What to work on */}
-            <div className="flex items-start gap-3">
-              <Target className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
-                    Primary Training Target
-                  </span>
-                  <Badge
-                    variant={TARGET_VARIANT[recommendation.primaryTarget]}
+      {/* ── Secondary Detail ──────────────────────────────── */}
+      {hasSecondaryDetail && (
+        <div className="border-t border-border-subtle p-5 space-y-4">
+          {/* Contributing factors */}
+          {contributingFactors.length > 0 && (
+            <div className="space-y-1.5">
+              {contributingFactors.map(
+                (factor: ContributingFactor, i: number) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between gap-2 rounded-lg bg-surface-elevated px-3 py-2"
                   >
-                    {TARGET_LABELS[recommendation.primaryTarget]}
-                  </Badge>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-                  {recommendation.primaryReason}
-                </p>
-              </div>
-            </div>
-
-            {/* Secondary targets */}
-            {recommendation.secondaryTargets.length > 0 && (
-              <div className="ml-7 mt-4">
-                <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
-                  Also Consider
-                </span>
-                <div className="mt-2 space-y-1.5">
-                  {recommendation.secondaryTargets.map(
-                    (secondary: SecondaryRepairTarget, i: number) => (
-                      <div
-                        key={i}
-                        className="rounded-lg bg-surface-elevated px-3 py-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Badge variant={TARGET_VARIANT[secondary.target]}>
-                            {TARGET_LABELS[secondary.target]}
-                          </Badge>
-                          <span className="text-xs text-text-muted">
-                            &larr;{" "}
-                            {CATEGORY_LABELS[secondary.sourceCategory]}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs leading-relaxed text-text-muted">
-                          {secondary.reason}
-                        </p>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Evidence section */}
-            {evidence && (
-              <div className="mt-6 flex items-start gap-3">
-                <Activity className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
-                      Pattern History
-                    </span>
-                    <Badge variant={STATUS_VARIANT[evidence.status]}>
-                      {STATUS_LABELS[evidence.status]}
-                    </Badge>
-                  </div>
-                  {evidence.totalGamesAnalyzed > 0 && (
-                    <div className="mt-2 flex gap-4 text-xs text-text-muted">
-                      <span>
-                        Seen in{" "}
-                        <strong className="text-text-secondary">
-                          {evidence.totalOccurrences}
-                        </strong>{" "}
-                        of{" "}
-                        <strong className="text-text-secondary">
-                          {evidence.totalGamesAnalyzed}
-                        </strong>{" "}
-                        analyzed games
-                      </span>
-                      {evidence.totalOccurrences > 0 && (
-                        <>
-                          <span>
-                            Recent:{" "}
-                            <strong className="text-text-secondary">
-                              {evidence.recentOccurrences}
-                            </strong>
-                          </span>
-                          <span>
-                            Older:{" "}
-                            <strong className="text-text-secondary">
-                              {evidence.olderOccurrences}
-                            </strong>
-                          </span>
-                        </>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <MoveNotation
+                        ply={factor.ply}
+                        moveSan={factor.moveSan}
+                        swingCp={factor.swingCp}
+                      />
+                      <Badge variant={CATEGORY_VARIANT[factor.category]}>
+                        {CATEGORY_LABELS[factor.category]}
+                      </Badge>
                     </div>
-                  )}
-                  <p className="mt-2 text-xs leading-relaxed text-text-muted">
-                    {evidence.explanation}
-                  </p>
-                </div>
+                    <span className="text-xs text-text-muted">
+                      {factor.note}
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+          {/* Secondary targets */}
+          {recommendation.repairNeeded &&
+            recommendation.secondaryTargets.length > 0 && (
+              <div className="space-y-1.5">
+                {recommendation.secondaryTargets.map(
+                  (secondary: SecondaryRepairTarget, i: number) => (
+                    <div
+                      key={i}
+                      className="rounded-lg bg-surface-elevated px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Badge variant={TARGET_VARIANT[secondary.target]}>
+                          {TARGET_LABELS[secondary.target]}
+                        </Badge>
+                        <span className="text-xs text-text-muted">
+                          &larr;{" "}
+                          {CATEGORY_LABELS[secondary.sourceCategory]}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-text-muted">
+                        {secondary.reason}
+                      </p>
+                    </div>
+                  )
+                )}
               </div>
             )}
 
-            {/* Divider + CTA */}
-            <div className="mt-6 border-t border-border-subtle pt-5">
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-text-muted">
-                  {recommendation.summary}
-                </p>
-                <ReviewCTA />
-              </div>
-            </div>
-          </div>
+          {/* Opening branch repair */}
+          {OPENING_CATEGORIES.has(diagnosis.primaryCategory) &&
+            branchRepair != null && (
+              <OpeningBranchRepair branchRepair={branchRepair} />
+            )}
         </div>
       )}
 
-      {/* Non-repair CTA (game was lost but no repair target needed — unlikely but handle) */}
-      {!recommendation.repairNeeded && (
-        <div className="rounded-lg bg-surface-elevated px-5 py-4">
-          <p className="text-xs text-text-muted">{recommendation.summary}</p>
-        </div>
-      )}
+      {/* ── Stats row — last ─────────────────────────────── */}
+      <div className="border-t border-border-subtle px-5 py-3 flex flex-wrap gap-4 text-xs text-text-muted">
+        <span>
+          Mistakes:{" "}
+          <strong className="text-text-secondary">
+            {diagnosis.mistakeCount}
+          </strong>
+        </span>
+        <span>
+          Blunders:{" "}
+          <strong className="text-danger">
+            {diagnosis.blunderCount}
+          </strong>
+        </span>
+        <span>
+          Total CP loss:{" "}
+          <strong className="text-text-secondary">
+            {diagnosis.totalCpLoss}
+          </strong>
+        </span>
+        <span>
+          Final eval:{" "}
+          <strong
+            className={
+              diagnosis.finalEvalCp < 0 ? "text-danger" : "text-success"
+            }
+          >
+            {diagnosis.finalEvalCp > 0 ? "+" : ""}
+            {diagnosis.finalEvalCp}cp
+          </strong>
+        </span>
+      </div>
     </div>
   );
 }

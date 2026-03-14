@@ -1875,3 +1875,25 @@ export interface RepairEvidence {
   totalGamesAnalyzed: number;
   explanation: string;
 }
+
+// ── Repertoire Branch Repair ─────────────────────────────────────────
+
+export type BranchRepairConfidence = "high" | "medium" | "low";
+export type BranchRepairMode = "line_recall" | "concept_review" | "family_study";
+
+export interface RepertoireBranchRepair {
+  matched: boolean;
+  lineId: string | null;
+  lineName: string | null;
+  repertoireKey: string | null;
+  repertoireName: string | null;
+  openingFamily: string | null;
+  matchedMoveCount: number;
+  firstDeviationPly: number | null;
+  firstDeviationMove: string | null;
+  deviationByUser: boolean;
+  repairMode: BranchRepairMode;
+  confidence: BranchRepairConfidence;
+  explanation: string;
+  drillLineId: string | null;
+}

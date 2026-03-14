@@ -94,7 +94,7 @@ export function RepertoireDrillConsole({ preferredLineId }: { preferredLineId?: 
         <div>
           <h2 className="text-lg font-semibold text-text-primary">Repertoire Drill Session</h2>
           <p className="mt-1 text-sm text-text-secondary">
-            Start a deterministic line-recall session from your current repertoire drill queue.
+            Practice your opening lines. The system selects lines based on recall urgency and forgetting risk.
             {preferredLineId ? " A repair-targeted line will be prioritized first." : ""}
           </p>
         </div>
@@ -102,6 +102,7 @@ export function RepertoireDrillConsole({ preferredLineId }: { preferredLineId?: 
           type="button"
           onClick={() => startSession(preferredLineId)}
           disabled={loading}
+          aria-label="Start a repertoire drill session"
           className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
         >
           Start Drill Session

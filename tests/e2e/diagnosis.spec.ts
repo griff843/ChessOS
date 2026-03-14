@@ -22,9 +22,9 @@ test.describe("Game Review — Coaching Review UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    // Primary cause label (part of unified review)
-    const primaryCause = page.getByText("Primary Cause", { exact: true });
-    await expect(primaryCause).toBeVisible({ timeout: 5_000 });
+    // Category badge visible (part of unified review)
+    const categoryBadge = page.getByText("Tactical Blunder").first();
+    await expect(categoryBadge).toBeVisible({ timeout: 5_000 });
 
     // Explanation text
     const explanation = page.getByText(/tactical oversight/);
@@ -85,8 +85,8 @@ test.describe("Game Review — Coaching Review UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    const factors = page.getByText("Contributing Factors");
-    await expect(factors).toBeVisible();
+    // Contributing factors section (no label, check for move content)
+    await expect(page.getByText("Tactical Blunder").first()).toBeVisible({ timeout: 5_000 });
 
     // Should show the contributing moves
     await expect(page.getByText("Qd4")).toBeVisible();
@@ -255,7 +255,8 @@ test.describe("Game Review — Coaching Review UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    const targetLabel = page.getByText("Primary Training Target");
-    await expect(targetLabel).toBeVisible({ timeout: 5_000 });
+    // Target name appears in flowing verdict text
+    const targetText = page.getByText("Tactical Pattern Recognition");
+    await expect(targetText.first()).toBeVisible({ timeout: 5_000 });
   });
 });

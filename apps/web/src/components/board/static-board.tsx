@@ -32,7 +32,7 @@ export function StaticBoard({
 
   return (
     <div
-      className="rounded-xl border border-border bg-surface-elevated p-3"
+      className="rounded-xl border border-border bg-surface-elevated p-3 max-w-full"
       style={{ width: size + 24 }}
     >
       <Chessboard options={options} />

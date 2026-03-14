@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
-import { loadGameDiagnosis, loadAllGameDiagnoses } from "@/lib/artifacts";
+import { loadGameDiagnosis, loadAllGameDiagnoses, loadGameMoveSans } from "@/lib/artifacts";
 import { loadGameContext } from "@/lib/game-context";
 import { GameDiagnosisActions } from "@/components/diagnosis/game-diagnosis-actions";
 import { CoachingReview } from "@/components/review/coaching-review";
@@ -10,9 +10,11 @@ import {
   generateRepairTargets,
   evaluateRepairEvidence,
   CATEGORY_TO_TARGET,
+  buildRepertoireBranchRepair,
+  buildRepertoireMap,
 } from "@chess-os/training";
-import type { DiagnosisHistoryEntry } from "@/lib/types";
-import { FileCode2, ArrowLeft, LayoutList } from "lucide-react";
+import type { DiagnosisHistoryEntry, RepertoireBranchRepair } from "@/lib/types";
+import { FileCode2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,11 @@ export default async function GameDetailPage({
   if (!ctx.rowCount) {
     return (
       <>
+        <nav className="mb-4 flex items-center gap-1.5 text-xs text-text-muted" aria-label="Breadcrumb">
+          <Link href="/games" className="hover:text-text-primary transition-colors">Games</Link>
+          <span>/</span>
+          <span className="text-text-secondary">Game Review</span>
+        </nav>
         <PageHeader title="Game Review" subtitle={gameId} />
         <EmptyState
           icon={<FileCode2 className="h-10 w-10" />}
@@ -50,6 +57,13 @@ export default async function GameDetailPage({
   // Compute repair targets + evidence when diagnosis exists
   let recommendation = null;
   let evidence = null;
+  let branchRepair: RepertoireBranchRepair | null = null;
+
+  const OPENING_CATEGORIES = new Set([
+    "opening_memory_failure",
+    "opening_concept_failure",
+  ]);
+
   if (diagnosis) {
     recommendation = generateRepairTargets(
       diagnosis as Parameters<typeof generateRepairTargets>[0]
@@ -73,6 +87,19 @@ export default async function GameDetailPage({
         history
       );
     }
+
+    // For opening-related diagnoses, compute branch-aware repair
+    if (OPENING_CATEGORIES.has(diagnosis.primaryCategory)) {
+      const gameMoves = await loadGameMoveSans(gameId);
+      if (gameMoves) {
+        const repertoireMap = buildRepertoireMap(new Date().toISOString());
+        branchRepair = buildRepertoireBranchRepair(
+          diagnosis as Parameters<typeof buildRepertoireBranchRepair>[0],
+          gameMoves,
+          repertoireMap
+        ) as RepertoireBranchRepair;
+      }
+    }
   }
 
   // Build context bar items
@@ -92,50 +119,47 @@ export default async function GameDetailPage({
 
   return (
     <>
+      {/* Breadcrumb */}
+      <nav className="mb-4 flex items-center gap-1.5 text-xs text-text-muted" aria-label="Breadcrumb">
+        <Link href="/games" className="hover:text-text-primary transition-colors">Games</Link>
+        <span>/</span>
+        <span className="text-text-secondary">Game Review</span>
+      </nav>
+
       {/* Header with game context */}
-      <div className="mb-6 flex items-start justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold tracking-tight text-text-primary">
-              Game Review
-            </h1>
-            {ctx.result && (
-              <Badge
-                variant={
-                  ctx.result === "Won"
-                    ? "success"
-                    : ctx.result === "Lost"
-                      ? "danger"
-                      : ctx.result === "Draw"
-                        ? "muted"
-                        : "default"
-                }
-              >
-                {ctx.result}
-              </Badge>
-            )}
-          </div>
-          <p className="mt-1 text-sm text-text-secondary truncate">
-            {subtitle}
-          </p>
-          {/* Secondary context line */}
-          {(ctx.date || ctx.whiteElo || ctx.blackElo) && (
-            <div className="mt-1 flex items-center gap-3 text-xs text-text-muted">
-              {ctx.date && <span>{ctx.date}</span>}
-              {ctx.whiteElo && ctx.blackElo && (
-                <span>Elo {ctx.whiteElo} vs {ctx.blackElo}</span>
-              )}
-              {ctx.rowCount && <span>{ctx.rowCount} positions</span>}
-            </div>
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold tracking-tight text-text-primary">
+            Game Review
+          </h1>
+          {ctx.result && (
+            <Badge
+              variant={
+                ctx.result === "Won"
+                  ? "success"
+                  : ctx.result === "Lost"
+                    ? "danger"
+                    : ctx.result === "Draw"
+                      ? "muted"
+                      : "default"
+              }
+            >
+              {ctx.result}
+            </Badge>
           )}
         </div>
-        <Link
-          href="/games"
-          className="flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary transition-colors"
-        >
-          <LayoutList className="h-3 w-3" />
-          All Games
-        </Link>
+        <p className="mt-1 text-sm text-text-secondary truncate">
+          {subtitle}
+        </p>
+        {(ctx.date || ctx.whiteElo || ctx.blackElo) && (
+          <div className="mt-1 flex items-center gap-3 text-xs text-text-muted">
+            {ctx.date && <span>{ctx.date}</span>}
+            {ctx.whiteElo && ctx.blackElo && (
+              <span>Elo {ctx.whiteElo} vs {ctx.blackElo}</span>
+            )}
+            {ctx.rowCount && <span>{ctx.rowCount} positions</span>}
+          </div>
+        )}
       </div>
 
       {/* Main content */}
@@ -145,6 +169,7 @@ export default async function GameDetailPage({
           recommendation={recommendation}
           evidence={evidence}
           heroColor={ctx.heroColor}
+          branchRepair={branchRepair}
         />
       ) : (
         <GameDiagnosisActions gameId={gameId} heroColor={ctx.heroColor} />

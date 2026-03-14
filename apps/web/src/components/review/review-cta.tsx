@@ -33,6 +33,7 @@ export function ReviewCTA() {
       <button
         onClick={handleClick}
         disabled={pending}
+        aria-label="Generate a training session for this weakness"
         className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent/90 disabled:opacity-60"
       >
         {pending ? (

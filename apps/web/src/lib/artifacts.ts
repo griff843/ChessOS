@@ -608,6 +608,43 @@ export async function loadAllGameDiagnoses(): Promise<GameLossDiagnosis[]> {
   }
 }
 
+/**
+ * Load the SAN move sequence for a game from its training-dataset.json.
+ * Returns the moves in dataset row order (ply order), filtered to non-empty strings.
+ * Returns null if the file is missing or contains no valid moves.
+ */
+export async function loadGameMoveSans(gameId: string): Promise<string[] | null> {
+  const path = join(OUT, "games", gameId, "training-dataset.json");
+  try {
+    const raw = await readFile(path, "utf-8");
+    const parsed: unknown = JSON.parse(raw);
+    // Real format: { rowCount, rows: TrainingDatasetRow[] }
+    // Fallback: plain array (legacy / test fixtures)
+    let rowsArray: unknown[] | null = null;
+    if (Array.isArray(parsed)) {
+      rowsArray = parsed;
+    } else if (
+      parsed !== null &&
+      typeof parsed === "object" &&
+      "rows" in parsed &&
+      Array.isArray((parsed as { rows: unknown }).rows)
+    ) {
+      rowsArray = (parsed as { rows: unknown[] }).rows;
+    }
+    if (!rowsArray) return null;
+    const moves = rowsArray
+      .map((r) =>
+        r !== null && typeof r === "object" && "moveSan" in r
+          ? (r as { moveSan: unknown }).moveSan
+          : null
+      )
+      .filter((m): m is string => typeof m === "string" && m.length > 0);
+    return moves.length > 0 ? moves : null;
+  } catch {
+    return null;
+  }
+}
+
 
 
 

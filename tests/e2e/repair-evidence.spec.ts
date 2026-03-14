@@ -13,10 +13,10 @@ test.describe("Repair Evidence — UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    // Unified coaching review sections
-    await expect(page.getByText("Primary Cause")).toBeVisible({ timeout: 5_000 });
-    await expect(page.getByText("Primary Training Target")).toBeVisible();
-    await expect(page.getByText("Pattern History")).toBeVisible();
+    // Unified coaching review content
+    await expect(page.getByText("Tactical Blunder").first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText("Tactical Pattern Recognition").first()).toBeVisible();
+    await expect(page.getByText("First Occurrence")).toBeVisible();
 
     await page.screenshot({
       path: join(SCREENSHOT_DIR, "11-evidence-full-flow.png"),
@@ -30,8 +30,8 @@ test.describe("Repair Evidence — UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    // Pattern History label
-    await expect(page.getByText("Pattern History")).toBeVisible({ timeout: 5_000 });
+    // Evidence status badge
+    await expect(page.getByText("First Occurrence")).toBeVisible({ timeout: 5_000 });
 
     // With only 1 lost game (itself excluded), status should be "First Occurrence"
     const badge = page.getByText("First Occurrence");
@@ -132,8 +132,8 @@ test.describe("Repair Evidence — UI Audit", () => {
     // Should show "No Critical Errors Found"
     await expect(page.getByText("No Critical Errors Found")).toBeVisible({ timeout: 5_000 });
 
-    // Evidence should NOT be visible
-    await expect(page.getByText("Pattern History")).not.toBeVisible();
+    // Evidence badges should NOT be visible
+    await expect(page.getByText("First Occurrence")).not.toBeVisible();
   });
 
   // ── 6. Empty state (no diagnosis) remains intact ────────────────────
@@ -151,7 +151,7 @@ test.describe("Repair Evidence — UI Audit", () => {
       const diagnoseBtn = page.getByRole("button", { name: /Diagnose Game/ });
       await expect(diagnoseBtn).toBeVisible({ timeout: 5_000 });
 
-      await expect(page.getByText("Pattern History")).not.toBeVisible();
+      await expect(page.getByText("First Occurrence")).not.toBeVisible();
     } finally {
       await writeFile(diagPath, backup, "utf-8");
     }
@@ -164,7 +164,7 @@ test.describe("Repair Evidence — UI Audit", () => {
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
     await expect(page.getByText("Game not found")).toBeVisible();
-    await expect(page.getByText("Pattern History")).not.toBeVisible();
+    await expect(page.getByText("First Occurrence")).not.toBeVisible();
   });
 
   // ── 8. Full coaching flow is coherent ───────────────────────────────
@@ -173,10 +173,10 @@ test.describe("Repair Evidence — UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    // Unified sections in sequence
-    await expect(page.getByText("Primary Cause")).toBeVisible({ timeout: 5_000 });
-    await expect(page.getByText("Primary Training Target")).toBeVisible();
-    await expect(page.getByText("Pattern History")).toBeVisible();
+    // Key content visible in unified review
+    await expect(page.getByText("Tactical Blunder").first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText("Tactical Pattern Recognition").first()).toBeVisible();
+    await expect(page.getByText("First Occurrence")).toBeVisible();
 
     // Diagnosis: tactical blunder
     await expect(page.getByText("Tactical Blunder").first()).toBeVisible();
@@ -203,7 +203,7 @@ test.describe("Repair Evidence — UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    await expect(page.getByText("Pattern History")).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText("First Occurrence")).toBeVisible({ timeout: 5_000 });
 
     const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
     expect(bodyWidth).toBeLessThanOrEqual(1280);

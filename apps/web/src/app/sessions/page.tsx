@@ -94,7 +94,7 @@ export default async function SessionsPage() {
         />
       </div>
 
-      {/* Pending sessions â€” ready to launch */}
+      {/* Pending sessions — ready to launch */}
       {pendingSessions.length > 0 && (
         <div className="mb-6">
           <SectionCard title="Ready to Study" subtitle="Sessions awaiting completion">

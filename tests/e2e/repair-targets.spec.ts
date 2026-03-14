@@ -13,12 +13,12 @@ test.describe("Repair Targets — UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    // Primary cause should appear (unified coaching review)
-    const primaryCause = page.getByText("Primary Cause");
-    await expect(primaryCause).toBeVisible({ timeout: 5_000 });
+    // Category badge should appear (unified coaching review)
+    const categoryBadge = page.getByText("Tactical Blunder").first();
+    await expect(categoryBadge).toBeVisible({ timeout: 5_000 });
 
-    // Primary Training Target should appear
-    const repairTarget = page.getByText("Primary Training Target");
+    // Target name should appear in flowing verdict
+    const repairTarget = page.getByText("Tactical Pattern Recognition").first();
     await expect(repairTarget).toBeVisible({ timeout: 5_000 });
 
     await page.screenshot({
@@ -33,8 +33,8 @@ test.describe("Repair Targets — UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    // Primary Training Target label
-    const primaryLabel = page.getByText("Primary Training Target");
+    // Target name in flowing verdict
+    const primaryLabel = page.getByText("Tactical Pattern Recognition").first();
     await expect(primaryLabel).toBeVisible({ timeout: 5_000 });
 
     // Badge: Tactical Pattern Recognition (from tactical_blunder)
@@ -63,9 +63,8 @@ test.describe("Repair Targets — UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    // "Also Consider" section header
-    const alsoConsider = page.getByText("Also Consider");
-    await expect(alsoConsider).toBeVisible({ timeout: 5_000 });
+    // Secondary target badges should appear
+    // (no "Also Consider" label — badges are directly visible)
 
     // Secondary targets from contributing factors:
     // practical_collapse -> Practical Stabilization
@@ -103,9 +102,8 @@ test.describe("Repair Targets — UI Audit", () => {
     const noLoss = page.getByText("No Critical Errors Found");
     await expect(noLoss).toBeVisible({ timeout: 5_000 });
 
-    // Should NOT show repair targets
-    await expect(page.getByText("Primary Training Target")).not.toBeVisible();
-    await expect(page.getByText("Also Consider")).not.toBeVisible();
+    // Should NOT show repair target content
+    await expect(page.getByText("Tactical Pattern Recognition")).not.toBeVisible();
 
     await page.screenshot({
       path: join(SCREENSHOT_DIR, "08-repair-targets-no-loss.png"),
@@ -135,7 +133,7 @@ test.describe("Repair Targets — UI Audit", () => {
       await expect(diagnoseBtn).toBeVisible({ timeout: 5_000 });
 
       // Repair targets should NOT be visible (no diagnosis = no repair)
-      await expect(page.getByText("Primary Training Target")).not.toBeVisible();
+      await expect(page.getByText("Tactical Pattern Recognition")).not.toBeVisible();
     } finally {
       await writeFile(diagPath, backup, "utf-8");
     }
@@ -148,7 +146,7 @@ test.describe("Repair Targets — UI Audit", () => {
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
     await expect(page.getByText("Game not found")).toBeVisible();
-    await expect(page.getByText("Primary Training Target")).not.toBeVisible();
+    await expect(page.getByText("Tactical Pattern Recognition")).not.toBeVisible();
   });
 
   // ── 9. Diagnosis + repair form coherent coaching flow ───────────────
@@ -157,9 +155,9 @@ test.describe("Repair Targets — UI Audit", () => {
     await page.goto(`/games/${LOST_GAME_ID}`);
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
-    // Both sections should be visible in unified review
-    await expect(page.getByText("Primary Cause")).toBeVisible({ timeout: 5_000 });
-    await expect(page.getByText("Primary Training Target")).toBeVisible();
+    // Category badge and target visible in unified review
+    await expect(page.getByText("Tactical Blunder").first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText("Tactical Pattern Recognition").first()).toBeVisible();
 
     // Diagnosis mentions tactical oversight
     await expect(page.getByText(/tactical oversight/).first()).toBeVisible();
@@ -184,7 +182,7 @@ test.describe("Repair Targets — UI Audit", () => {
     await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
 
     // Coaching review visible
-    await expect(page.getByText("Primary Training Target")).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText("Tactical Pattern Recognition").first()).toBeVisible({ timeout: 5_000 });
 
     // Check no horizontal overflow
     const bodyWidth = await page.evaluate(

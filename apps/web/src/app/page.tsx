@@ -250,7 +250,7 @@ export default async function DashboardPage() {
               <div key={signal.metric} className="rounded-lg bg-surface-elevated px-3 py-2">
                 <p className="text-xs font-medium text-text-primary">{signal.signal}</p>
                 <p className="text-[11px] text-text-muted">
-                  current {signal.currentValue.toFixed(2)} Ã‚Â· target {signal.targetValue.toFixed(2)} Ã‚Â· {signal.direction}
+                  current {signal.currentValue.toFixed(2)} · target {signal.targetValue.toFixed(2)} · {signal.direction}
                 </p>
               </div>
             ))}
@@ -260,13 +260,13 @@ export default async function DashboardPage() {
               <div className="rounded-lg bg-surface-elevated px-3 py-2">
                 <p className="text-xs font-medium text-text-primary">Objective Status</p>
                 <p className="mt-1 text-[11px] text-text-muted">
-                  {objectiveProgress.objectiveStatus.replace(/_/g, " ")} Ã‚Â· {objectiveProgress.progressVerdict.replace(/_/g, " ")}
+                  {objectiveProgress.objectiveStatus.replace(/_/g, " ")} · {objectiveProgress.progressVerdict.replace(/_/g, " ")}
                 </p>
               </div>
               <div className="rounded-lg bg-surface-elevated px-3 py-2">
                 <p className="text-xs font-medium text-text-primary">Time On Objective</p>
                 <p className="mt-1 text-[11px] text-text-muted">
-                  {objectiveProgress.sessionsOnObjective} session(s) Ã‚Â· {objectiveProgress.activeDays.toFixed(1)} day(s)
+                  {objectiveProgress.sessionsOnObjective} session(s) · {objectiveProgress.activeDays.toFixed(1)} day(s)
                 </p>
               </div>
               <div className="rounded-lg bg-surface-elevated px-3 py-2">
@@ -291,7 +291,7 @@ export default async function DashboardPage() {
                 <div className="rounded-lg bg-surface-elevated px-3 py-2">
                   <p className="text-xs font-medium text-text-primary">Recommended Intervention</p>
                   <p className="mt-1 text-[11px] text-text-muted">
-                    {objectiveCoaching.interventionType.replace(/_/g, " ")} Ã‚Â· {objectiveCoaching.recommendationStrength}
+                    {objectiveCoaching.interventionType.replace(/_/g, " ")} · {objectiveCoaching.recommendationStrength}
                   </p>
                 </div>
               )}
@@ -310,7 +310,7 @@ export default async function DashboardPage() {
             <div className="mt-3 rounded-lg bg-surface-elevated px-3 py-3">
               <p className="text-xs font-medium text-text-primary">Previous Intervention Outcome</p>
               <p className="mt-1 text-[11px] text-text-muted">
-                {interventionEffectiveness.priorInterventionType.replace(/_/g, " ")} was {interventionEffectiveness.interventionOutcome.replace(/_/g, " ")} Ã‚Â· {interventionEffectiveness.outcomeStrength}
+                {interventionEffectiveness.priorInterventionType.replace(/_/g, " ")} was {interventionEffectiveness.interventionOutcome.replace(/_/g, " ")} · {interventionEffectiveness.outcomeStrength}
               </p>
               <p className="mt-1 text-[11px] text-text-muted">{interventionEffectiveness.narrativeSummaryData.summary}</p>
             </div>
@@ -344,7 +344,7 @@ export default async function DashboardPage() {
               <div className="mt-2 space-y-1">
                 {interventionMemory.recentEpisodes.slice(0, 3).map((episode, index) => (
                   <p key={episode.interventionEpisodeId} className="text-[11px] text-text-muted">
-                    Episode {index + 1}: {episode.interventionType.replace(/_/g, " ")} was {episode.outcome.replace(/_/g, " ")} Ã‚Â· {episode.compareSnapshot.summary}
+                    Episode {index + 1}: {episode.interventionType.replace(/_/g, " ")} was {episode.outcome.replace(/_/g, " ")} · {episode.compareSnapshot.summary}
                   </p>
                 ))}
               </div>

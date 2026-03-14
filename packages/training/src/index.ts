@@ -184,5 +184,6 @@ export * from './diagnosis/diagnose-game-loss';
 export * from './repair/types';
 export * from './repair/generate-repair-targets';
 export * from './repair/evaluate-repair-evidence';
+export * from './repair/build-repertoire-branch-repair';
 
 
