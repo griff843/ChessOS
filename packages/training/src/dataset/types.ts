@@ -1,5 +1,6 @@
 import type { ChessColor } from "@chess-os/chess-core";
 import type { FeatureVector, GamePhase, MistakeLabel } from "@chess-os/classifier";
+import type { ExercisePerspective } from "../perspective/player-perspective";
 
 /**
  * One row of the training dataset.
@@ -17,6 +18,8 @@ export interface TrainingDatasetRow {
   ply: number;
   fen: string;
   mover: ChessColor;
+  heroColor: ChessColor | null;
+  perspective: ExercisePerspective;
 
   // The move played from this position
   moveSan: string;

@@ -17,20 +17,20 @@ test.describe("Server action tests", () => {
     expect(result.canRefreshInsights).toBe(result.progressReady);
   });
 
-  test("checkArtifactHealth returns 34 artifacts", async ({ api }) => {
+  test("checkArtifactHealth returns 64 artifacts", async ({ api }) => {
     const result = (await api.call("checkArtifactHealth")) as Array<{
       name: string;
       exists: boolean;
     }>;
 
-    expect(result).toHaveLength(34);
+    expect(result).toHaveLength(64);
     for (const artifact of result) {
       expect(artifact.name).toBeTruthy();
       expect(typeof artifact.exists).toBe("boolean");
     }
   });
 
-  test("generateNewSession succeeds with effectiveness-aware objective metadata", async ({ api, artifacts }) => {
+  test("generateNewSession succeeds with hero-side default and effectiveness-aware objective metadata", async ({ api, artifacts }) => {
     const result = (await api.call("generateNewSession")) as {
       success: boolean;
       sessionId: string | null;
@@ -42,7 +42,12 @@ test.describe("Server action tests", () => {
     expect(result.exerciseCount).toBe(10);
 
     const session = await artifacts.readJson<{
+      exercises: Array<{
+        perspective?: string;
+        sideToMove: string;
+      }>;
       metadata: {
+        selectedPerspective?: string;
         exerciseTypeMix?: Record<string, number>;
         trainingObjective?: string;
         objectiveReason?: string;
@@ -76,6 +81,11 @@ test.describe("Server action tests", () => {
         interventionCompareSummary?: string;
       };
     }>(`sessions/${result.sessionId!}/study-session.json`);
+
+    expect(session.metadata.selectedPerspective).toBe("hero");
+    expect(session.exercises.length).toBeGreaterThan(0);
+    expect(session.exercises.some((exercise) => exercise.perspective === "hero")).toBe(true);
+    expect(session.exercises.some((exercise) => exercise.perspective === "opponent")).toBe(false);
 
     expect(session.metadata.exerciseTypeMix).toBeTruthy();
     expect(session.metadata.trainingObjective).toBeTruthy();
@@ -113,6 +123,35 @@ test.describe("Server action tests", () => {
     expect(sidecarExists).toBe(true);
   });
 
+  test("generateNewSession can explicitly build an opponent-side session", async ({ api, artifacts }) => {
+    const result = (await api.call("generateNewSession", {
+      perspective: "opponent",
+    })) as {
+      success: boolean;
+      sessionId: string | null;
+      exerciseCount: number;
+      error?: string | null;
+    };
+
+    expect(result.success).toBe(true);
+    expect(result.sessionId).toBeTruthy();
+    expect(result.exerciseCount).toBeGreaterThan(0);
+
+    const session = await artifacts.readJson<{
+      exercises: Array<{
+        perspective?: string;
+      }>;
+      metadata: {
+        selectedPerspective?: string;
+      };
+    }>(`sessions/${result.sessionId!}/study-session.json`);
+
+    expect(session.metadata.selectedPerspective).toBe("opponent");
+    expect(session.exercises.length).toBeGreaterThan(0);
+    expect(session.exercises.some((exercise) => exercise.perspective === "opponent")).toBe(true);
+    expect(session.exercises.some((exercise) => exercise.perspective === "hero")).toBe(false);
+  });
+
   test("generateNewSession fails when corpus missing", async ({ api, artifacts }) => {
     await artifacts.backupAndRemove("datasets/training-exercises.jsonl");
 
@@ -145,6 +184,35 @@ test.describe("Server action tests", () => {
     expect(await artifacts.exists("objective/intervention-effectiveness.json")).toBe(true);
     expect(await artifacts.exists("objective/intervention-effectiveness.md")).toBe(true);
     expect(await artifacts.exists("objective/intervention-history.jsonl")).toBe(true);
+    expect(await artifacts.exists("concepts/concept-graph.json")).toBe(true);
+    expect(await artifacts.exists("concepts/concept-graph.md")).toBe(true);
+    expect(await artifacts.exists("concepts/concept-state.json")).toBe(true);
+    expect(await artifacts.exists("concepts/concept-state.md")).toBe(true);
+    expect(await artifacts.exists("openings/opening-report.json")).toBe(true);
+    expect(await artifacts.exists("openings/opening-report.md")).toBe(true);
+    expect(await artifacts.exists("openings/opening-mistakes.json")).toBe(true);
+    expect(await artifacts.exists("openings/opening-mistakes.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-map.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-map.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-review.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-review.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-transfer.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-transfer.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-drill-memory.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-drill-memory.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-drill-queue.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-drill-queue.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-drill-sessions.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-drill-events.jsonl")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-transfer-coaching.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-transfer-coaching.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-repair.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-repair.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-repair-queue.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-repair-queue.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-repair-outcomes.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-repair-outcomes.md")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-repair-history.jsonl")).toBe(true);
 
     const objectiveProgress = await artifacts.readJson<{
       currentObjective: string;
@@ -309,6 +377,9 @@ test.describe("Server action tests", () => {
     expect(effectivenessB.interventionOutcome).toBe(effectivenessA.interventionOutcome);
     expect(effectivenessB.recommendedAction).toBe(effectivenessA.recommendedAction);
     expect(effectivenessB.narrativeSummaryData.summary).toBe(effectivenessA.narrativeSummaryData.summary);
+    expect(escalationB.escalationVerdict).toBe(escalationA.escalationVerdict);
+    expect(escalationB.escalationReason).toBe(escalationA.escalationReason);
+    expect(escalationB.escalationStrength).toBe(escalationA.escalationStrength);
   });
 
   test("refreshInsights fails when progress missing", async ({ api, artifacts }) => {
@@ -322,7 +393,6 @@ test.describe("Server action tests", () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain("No progress data");
   });
-
 
   test("loadImportOverview reports PGN readiness", async ({ api }) => {
     const result = (await api.call("loadImportOverview")) as {
@@ -362,6 +432,73 @@ test.describe("Server action tests", () => {
     expect(result.status!.summary.gamesDetected).toBeGreaterThan(0);
     expect(result.status!.summary.trainingExercises).toBeGreaterThan(0);
   });
+
+  test("repertoire drill session persists explicit drill events", async ({ api, artifacts }) => {
+    const started = (await api.call("startRepertoireDrillSession")) as {
+      success: boolean;
+      drillSessionId: string | null;
+      exerciseCount: number;
+      error: string | null;
+    };
+
+    expect(started.success).toBe(true);
+    expect(started.drillSessionId).toBeTruthy();
+    expect(started.exerciseCount).toBeGreaterThan(0);
+
+    const session = (await api.call("loadRepertoireDrillSession", {
+      sessionId: started.drillSessionId,
+    })) as {
+      drillSessionId: string;
+      currentIndex: number;
+      exercises: Array<{ expectedContinuation: string[] }>;
+    };
+
+    expect(session.drillSessionId).toBe(started.drillSessionId);
+    expect(session.exercises.length).toBeGreaterThan(0);
+
+    const response = session.exercises[0].expectedContinuation.join(" ");
+    const submitted = (await api.call("submitRepertoireDrillAttempt", {
+      sessionId: started.drillSessionId,
+      userResponse: response,
+      confidence: 0.9,
+    })) as {
+      success: boolean;
+      grade: string | null;
+      correctness: boolean | null;
+      nextRecommendedReviewAt: string | null;
+      error: string | null;
+    };
+
+    expect(submitted.success).toBe(true);
+    expect(submitted.grade).toBe("exact_recall");
+    expect(submitted.correctness).toBe(true);
+    expect(submitted.nextRecommendedReviewAt).toBeTruthy();
+
+    expect(await artifacts.exists("repertoire/repertoire-drill-sessions.json")).toBe(true);
+    expect(await artifacts.exists("repertoire/repertoire-drill-events.jsonl")).toBe(true);
+  });
+
+  test("repair handoff starts a drill session with the requested line first", async ({ api }) => {
+    const started = (await api.call("startRepertoireDrillSession", {
+      preferredLineId: "scotch_main",
+    })) as {
+      success: boolean;
+      drillSessionId: string | null;
+    };
+
+    expect(started.success).toBe(true);
+    expect(started.drillSessionId).toBeTruthy();
+
+    const session = (await api.call("loadRepertoireDrillSession", {
+      sessionId: started.drillSessionId,
+    })) as {
+      exercises: Array<{ lineId: string }>;
+    };
+
+    expect(session.exercises.length).toBeGreaterThan(0);
+    expect(session.exercises[0].lineId).toBe("scotch_main");
+  });
+
   test("loadSessionData returns exercises for existing session", async ({ api }) => {
     const result = (await api.call("loadSessionData", {
       sessionId: "session-175c3f4f",
@@ -427,5 +564,3 @@ test.describe("Server action tests", () => {
     expect(result.attempt).toBeNull();
   });
 });
-
-

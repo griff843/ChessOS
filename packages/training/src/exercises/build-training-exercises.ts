@@ -83,6 +83,8 @@ export function buildGameTrainingExercises(
       ply: target.ply,
       fen: target.fen,
       sideToMove: target.mover,
+      heroColor: target.heroColor,
+      perspective: target.perspective,
       phase: target.phase,
 
       playedMoveSan: target.moveSan,

@@ -263,8 +263,12 @@ export function generateVisualizationExercises(
     result.push({
       exerciseId: ex.positionId,
       exerciseType: "visualization",
+      gameId: ex.gameId,
+      ply: ex.ply,
       fen: ex.fen,
       sideToMove: ex.sideToMove,
+      heroColor: ex.heroColor,
+      perspective: ex.perspective,
       phase: ex.phase,
       lessonCategory: ex.explanation.lessonCategory,
       difficultyEstimate: ex.explanation.difficultyEstimate,

@@ -1,18 +1,15 @@
-/**
+﻿/**
  * Types for M9A coach layer / deterministic study guidance.
  *
- * All types are read-only snapshots — no mutation to canonical state.
+ * All types are read-only snapshots - no mutation to canonical state.
  */
 
 import type { LessonCategory, DifficultyEstimate } from "../exercises/types.js";
 import type { TrendDirection } from "../trends/types.js";
+import type { ConceptCategory } from "../concepts/types.js";
 
-// ── Mistake Patterns ────────────────────────────────────────────────
-
-/** Severity classification for a category pattern. */
 export type PatternSeverity = "critical" | "moderate" | "minor";
 
-/** A single category's mistake pattern analysis. */
 export interface MistakePatternEntry {
   category: LessonCategory;
   severity: PatternSeverity;
@@ -27,7 +24,6 @@ export interface MistakePatternEntry {
   description: string;
 }
 
-/** Difficulty-level mistake pattern. */
 export interface DifficultyPattern {
   difficulty: DifficultyEstimate;
   lifetimeMissRate: number;
@@ -37,7 +33,6 @@ export interface DifficultyPattern {
   incorrectCount: number;
 }
 
-/** Profile of blunder and mistake frequency. */
 export interface BlunderProfile {
   totalBlunders: number;
   totalMistakes: number;
@@ -45,7 +40,6 @@ export interface BlunderProfile {
   avgEvalLossCp: number | null;
 }
 
-/** Complete mistake patterns artifact. */
 export interface MistakePatterns {
   generatedAt: string;
   categoryPatterns: MistakePatternEntry[];
@@ -54,9 +48,6 @@ export interface MistakePatterns {
   recurringWeaknesses: string[];
 }
 
-// ── Study Plan ──────────────────────────────────────────────────────
-
-/** A focus area within the study plan. */
 export interface StudyPlanFocus {
   category: LessonCategory;
   difficulty: DifficultyEstimate | null;
@@ -64,21 +55,28 @@ export interface StudyPlanFocus {
   exerciseCount: number;
 }
 
-/** Review focus within the study plan. */
 export interface StudyPlanReviewFocus {
   urgentCount: number;
   topCategories: string[];
   reason: string;
 }
 
-/** Exercise composition slot. */
 export interface ExerciseComposition {
   source: "review" | "weakness" | "new";
   count: number;
   description: string;
 }
 
-/** Complete study plan artifact. */
+export interface ConceptFocusSummary {
+  conceptKey: string;
+  conceptName: string;
+  conceptCategory: ConceptCategory;
+  reviewPriority: number;
+  explanation: string;
+  prerequisiteGaps: string[];
+  reinforcementPath: string[];
+}
+
 export interface StudyPlan {
   generatedAt: string;
   primaryFocus: StudyPlanFocus;
@@ -87,26 +85,170 @@ export interface StudyPlan {
   targetDifficultyMix: { easy: number; medium: number; hard: number };
   suggestedSessionSize: number;
   exerciseComposition: ExerciseComposition[];
+  conceptFocuses: ConceptFocusSummary[];
   rationale: string;
 }
 
-// ── Coaching Summary ────────────────────────────────────────────────
-
-/** Type of coaching insight. */
 export type InsightType = "strength" | "weakness" | "trend" | "review" | "milestone";
 
-/** A single coaching insight with priority for ordering. */
 export interface CoachingInsight {
   type: InsightType;
   message: string;
   priority: number;
 }
 
-/** Complete coaching summary artifact. */
+export interface CoachingConceptSnapshot {
+  topUnstableConcepts: Array<{
+    conceptKey: string;
+    conceptName: string;
+    reviewPriority: number;
+  }>;
+  strongestConcepts: Array<{
+    conceptKey: string;
+    conceptName: string;
+    masteryScore: number;
+  }>;
+  prerequisiteHotspots: Array<{
+    conceptKey: string;
+    missingPrerequisites: string[];
+  }>;
+}
+
 export interface CoachingSummary {
   generatedAt: string;
   headline: string;
   insights: CoachingInsight[];
   progressStatement: string;
   nextStepStatement: string;
+  conceptSnapshot: CoachingConceptSnapshot | null;
 }
+
+
+
+export interface StudyPlan {
+  openingFocuses: string[];
+}
+
+export interface CoachingSummary {
+  openingSnapshot: {
+    topFamilies: Array<{ openingFamily: string; openingName: string; mistakes: number }>;
+    recurringMistakes: Array<{ theme: string; count: number }>;
+  } | null;
+}
+
+export interface StudyPlan {
+  repertoireFocuses: Array<{
+    repertoireKey: string;
+    lineId: string;
+    lineName: string;
+    recommendedAction: string;
+    reviewPriority: number;
+  }>;
+}
+
+export interface CoachingSummary {
+  repertoireSnapshot: {
+    currentRepertoireHealth: Array<{ repertoireKey: string; repertoireName: string; reviewPriority: number }>;
+    topLinesToReview: Array<{ repertoireName: string; lineName: string; reviewPriority: number }>;
+  } | null;
+}
+
+export interface StudyPlan {
+  repertoireTransferFocuses: Array<{
+    repertoireKey: string;
+    lineId: string;
+    lineName: string;
+    transferFailureType: string;
+    recommendedReviewLine: string;
+    urgency: number;
+  }>;
+}
+
+export interface StudyPlan {
+  repertoireDrillFocuses: Array<{
+    lineId: string;
+    lineName: string;
+    urgency: number;
+    nextRecommendedReviewAt: string | null;
+    recommendedAction: string;
+  }>;
+}
+
+export interface CoachingSummary {
+  repertoireTransferSnapshot: {
+    fragileLines: Array<{
+      repertoireName: string;
+      lineName: string;
+      urgency: number;
+      transferFailureType: string;
+    }>;
+    topActions: Array<{
+      lineName: string;
+      urgency: number;
+      action: string;
+    }>;
+  } | null;
+}
+
+export interface CoachingSummary {
+  repertoireDrillSnapshot: {
+    fragileLines: Array<{
+      lineName: string;
+      forgettingRisk: number;
+      recallConfidence: number;
+    }>;
+    nextLinesToReview: Array<{
+      lineName: string;
+      urgency: number;
+      nextRecommendedReviewAt: string | null;
+    }>;
+  } | null;
+}
+
+export interface StudyPlan {
+  repertoireRepairFocuses: Array<{
+    sourceGameId: string;
+    lineId: string;
+    lineName: string;
+    repairType: string;
+    urgency: number;
+    scheduledDrillReason: string;
+  }>;
+  repertoireRepairOutcomeFocuses: Array<{
+    repairId: string;
+    lineId: string;
+    lineName: string;
+    outcomeVerdict: string;
+    urgency: number;
+    nextAction: string;
+  }>;
+}
+
+export interface CoachingSummary {
+  repertoireRepairSnapshot: {
+    urgentGames: Array<{
+      sourceGameId: string;
+      lineName: string;
+      repairType: string;
+      urgency: number;
+    }>;
+    topRepairLines: Array<{
+      lineName: string;
+      urgency: number;
+      scheduledDrillReason: string;
+    }>;
+  } | null;
+  repertoireRepairOutcomeSnapshot: {
+    repairsThatWorked: Array<{
+      lineName: string;
+      outcomeVerdict: string;
+      outcomeReason: string;
+    }>;
+    repairsStillFragile: Array<{
+      lineName: string;
+      outcomeVerdict: string;
+      nextAction: string;
+    }>;
+  } | null;
+}
+

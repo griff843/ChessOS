@@ -42,6 +42,8 @@ export function selectTrainingTargets(
       ply: pos.ply,
       moveSan: pos.moveSan,
       mover: pos.mover,
+      heroColor: pos.heroColor ?? null,
+      perspective: pos.perspective ?? "unknown",
       fen: pos.fen,
       evalCp: pos.evalCp,
       phase: pos.phase,

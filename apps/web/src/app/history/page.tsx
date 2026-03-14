@@ -15,7 +15,9 @@ import { ProgressChart } from "@/components/charts/progress-chart";
 import { ThemeTrendChart } from "@/components/charts/theme-trend-chart";
 import { ImprovementReport } from "@/components/progress/improvement-report";
 import { formatCategory, formatDateTime, formatPercent } from "@/lib/utils";
+import { deriveSessionLabel } from "@/lib/session-label";
 import { Clock, Trophy, BarChart3, Target } from "lucide-react";
+import type { StudySession } from "@chess-os/training";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +28,9 @@ export default async function HistoryPage() {
     loadSessionHistory(),
   ]);
   const report = buildProgressReport({ sessions, resultsMap });
+  const sessionLabelMap = new Map<string, string>(
+    sessions.map((s: StudySession) => [s.sessionId, deriveSessionLabel(s)])
+  );
 
   if (history.length === 0 || report.sessions.length === 0) {
     return (
@@ -103,14 +108,17 @@ export default async function HistoryPage() {
           keyFn={(row) => row.sessionId}
           columns={[
             {
-              key: "date",
-              header: "Date",
+              key: "session",
+              header: "Session",
               render: (row) => (
                 <Link
                   href={`/history/session/${row.sessionId}`}
                   className="font-medium text-text-primary hover:text-accent"
                 >
-                  {formatDateTime(row.completedAt)}
+                  <span>{sessionLabelMap.get(row.sessionId) ?? "Study Session"}</span>
+                  <span className="ml-2 text-xs font-normal text-text-muted">
+                    {formatDateTime(row.completedAt)}
+                  </span>
                 </Link>
               ),
             },

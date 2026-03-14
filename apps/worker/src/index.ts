@@ -21,7 +21,12 @@ import {
   type EngineMode,
   type EvaluatedPosition,
 } from "@chess-os/engine";
-import { buildGameDataset, type TrainingDatasetRow } from "@chess-os/training";
+import {
+  buildGameDataset,
+  inferHeroColorForGame,
+  parsePgnHeaders,
+  type TrainingDatasetRow,
+} from "@chess-os/training";
 
 const DEFAULT_DEPTH = 20;
 
@@ -74,7 +79,12 @@ export async function processSingleGame(
     `[worker] stage 5 complete: ${classifications.length} classified best_or_ok=${counts.best_or_ok} inaccuracy=${counts.inaccuracy} mistake=${counts.mistake} blunder=${counts.blunder}`
   );
 
-  const rows = buildGameDataset(evaluated, features, classifications);
+  const heroColor = inferHeroColorForGame({
+    gameId,
+    headers: parsePgnHeaders(pgn),
+    preferredPlayerName: process.env.CHESS_OS_PLAYER_NAME ?? null,
+  });
+  const rows = buildGameDataset(evaluated, features, classifications, { heroColor });
   const datasetArtifact = {
     gameId,
     source: { format: "pgn" as const },

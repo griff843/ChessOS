@@ -84,8 +84,12 @@ export function generateRecallExercises(
     return {
       exerciseId: ex.positionId,
       exerciseType: "recall" as const,
+      gameId: ex.gameId,
+      ply: ex.ply,
       fen: ex.fen,
       sideToMove: ex.sideToMove,
+      heroColor: ex.heroColor,
+      perspective: ex.perspective,
       phase: ex.phase,
       lessonCategory: ex.explanation.lessonCategory,
       difficultyEstimate: ex.explanation.difficultyEstimate,

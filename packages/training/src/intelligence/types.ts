@@ -4,6 +4,7 @@
 
 import type { ChessColor } from "@chess-os/chess-core";
 import type { GamePhase, MistakeLabel } from "@chess-os/classifier";
+import type { ExercisePerspective } from "../perspective/player-perspective";
 
 /** Factor breakdown for a criticality score. */
 export interface CriticalityFactors {
@@ -20,6 +21,8 @@ export interface CriticalPosition {
   ply: number;
   moveSan: string;
   mover: ChessColor;
+  heroColor: ChessColor | null;
+  perspective: ExercisePerspective;
   fen: string;
   evalCp: number;
   phase: GamePhase;

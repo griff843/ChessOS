@@ -1,4 +1,4 @@
-import { readFile, readdir, stat } from "fs/promises";
+﻿import { readFile, readdir, stat } from "fs/promises";
 import { join } from "path";
 import { getImportAnalysisOverview, loadImportAnalysisStatus } from "./import-analysis";
 import { ROOT, OUT } from "./paths";
@@ -57,6 +57,10 @@ import type {
   LearningModelArtifact,
 } from "./types";
 import type { ImportAnalysisOverview, ImportAnalysisStatus } from "./import-types";
+import type { ConceptGraphArtifact, ConceptStateReportArtifact, GameLossDiagnosis } from "./types";
+import type { OpeningReportArtifact, OpeningMistakeArtifact, RepertoireDrillEventArtifact, RepertoireDrillMemoryArtifact, RepertoireDrillQueueArtifact, RepertoireDrillSessionSummaryArtifact, RepertoireMapArtifact, RepertoireRepairArtifact, RepertoireRepairOutcomesArtifact, RepertoireRepairQueueArtifact, RepertoireReviewArtifact, RepertoireTransferArtifact, RepertoireTransferCoachingArtifact } from "./types";
+import { isConceptGraphArtifact, isConceptStateReportArtifact } from "./validators";
+import { isOpeningReportArtifact, isOpeningMistakeArtifactList, isRepertoireDrillEventArtifactList, isRepertoireDrillMemoryArtifact, isRepertoireDrillQueueArtifact, isRepertoireDrillSessionSummaryArtifactList, isRepertoireMapArtifact, isRepertoireRepairArtifact, isRepertoireRepairOutcomesArtifact, isRepertoireRepairQueueArtifact, isRepertoireReviewArtifact, isRepertoireTransferArtifact, isRepertoireTransferCoachingArtifact, isGameLossDiagnosis } from "./validators";
 
 async function loadJsonDetailed<T>(
   path: string,
@@ -272,6 +276,94 @@ export async function loadLearningModel(): Promise<LearningModelArtifact | null>
   return loadJson<LearningModelArtifact>(join(OUT, "learning", "learning-model.json"), isLearningModelArtifact);
 }
 
+export async function loadConceptGraph(): Promise<ConceptGraphArtifact | null> {
+  return loadJson<ConceptGraphArtifact>(join(OUT, "concepts", "concept-graph.json"), isConceptGraphArtifact);
+}
+
+export async function loadConceptState(): Promise<ConceptStateReportArtifact | null> {
+  return loadJson<ConceptStateReportArtifact>(join(OUT, "concepts", "concept-state.json"), isConceptStateReportArtifact);
+}
+
+export async function loadOpeningReport(): Promise<OpeningReportArtifact | null> {
+  return loadJson<OpeningReportArtifact>(join(OUT, "openings", "opening-report.json"), isOpeningReportArtifact);
+}
+
+export async function loadOpeningMistakes(): Promise<OpeningMistakeArtifact[] | null> {
+  return loadJson<OpeningMistakeArtifact[]>(join(OUT, "openings", "opening-mistakes.json"), isOpeningMistakeArtifactList);
+}
+
+export async function loadRepertoireMap(): Promise<RepertoireMapArtifact | null> {
+  return loadJson<RepertoireMapArtifact>(join(OUT, "repertoire", "repertoire-map.json"), isRepertoireMapArtifact);
+}
+
+export async function loadRepertoireReview(): Promise<RepertoireReviewArtifact | null> {
+  return loadJson<RepertoireReviewArtifact>(join(OUT, "repertoire", "repertoire-review.json"), isRepertoireReviewArtifact);
+}
+
+export async function loadRepertoireTransfer(): Promise<RepertoireTransferArtifact | null> {
+  return loadJson<RepertoireTransferArtifact>(join(OUT, "repertoire", "repertoire-transfer.json"), isRepertoireTransferArtifact);
+}
+
+export async function loadRepertoireTransferCoaching(): Promise<RepertoireTransferCoachingArtifact | null> {
+  return loadJson<RepertoireTransferCoachingArtifact>(
+    join(OUT, "repertoire", "repertoire-transfer-coaching.json"),
+    isRepertoireTransferCoachingArtifact
+  );
+}
+
+export async function loadRepertoireDrillMemory(): Promise<RepertoireDrillMemoryArtifact | null> {
+  return loadJson<RepertoireDrillMemoryArtifact>(
+    join(OUT, "repertoire", "repertoire-drill-memory.json"),
+    isRepertoireDrillMemoryArtifact
+  );
+}
+
+export async function loadRepertoireDrillQueue(): Promise<RepertoireDrillQueueArtifact | null> {
+  return loadJson<RepertoireDrillQueueArtifact>(
+    join(OUT, "repertoire", "repertoire-drill-queue.json"),
+    isRepertoireDrillQueueArtifact
+  );
+}
+
+export async function loadRepertoireDrillSessions(): Promise<RepertoireDrillSessionSummaryArtifact[] | null> {
+  return loadJson<RepertoireDrillSessionSummaryArtifact[]>(
+    join(OUT, "repertoire", "repertoire-drill-sessions.json"),
+    isRepertoireDrillSessionSummaryArtifactList
+  );
+}
+
+export async function loadRepertoireDrillEvents(): Promise<RepertoireDrillEventArtifact[] | null> {
+  try {
+    const path = join(OUT, "repertoire", "repertoire-drill-events.jsonl");
+    const raw = await readFile(path, "utf-8");
+    const { rows } = safeParseJsonl<RepertoireDrillEventArtifact>(raw, path);
+    return isRepertoireDrillEventArtifactList(rows) ? rows : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function loadRepertoireRepair(): Promise<RepertoireRepairArtifact | null> {
+  return loadJson<RepertoireRepairArtifact>(
+    join(OUT, "repertoire", "repertoire-repair.json"),
+    isRepertoireRepairArtifact
+  );
+}
+
+export async function loadRepertoireRepairQueue(): Promise<RepertoireRepairQueueArtifact | null> {
+  return loadJson<RepertoireRepairQueueArtifact>(
+    join(OUT, "repertoire", "repertoire-repair-queue.json"),
+    isRepertoireRepairQueueArtifact
+  );
+}
+
+export async function loadRepertoireRepairOutcomes(): Promise<RepertoireRepairOutcomesArtifact | null> {
+  return loadJson<RepertoireRepairOutcomesArtifact>(
+    join(OUT, "repertoire", "repertoire-repair-outcomes.json"),
+    isRepertoireRepairOutcomesArtifact
+  );
+}
+
 export interface ArtifactStatus {
   name: string;
   path: string;
@@ -305,6 +397,34 @@ export async function checkArtifactHealth(): Promise<ArtifactStatus[]> {
     { name: "Intelligence Report", path: join(OUT, "strategic", "intelligence-report.json") },
     { name: "Pattern Library", path: join(OUT, "patterns", "pattern-library.json") },
     { name: "Learning Model", path: join(OUT, "learning", "learning-model.json") },
+    { name: "Concept Graph", path: join(OUT, "concepts", "concept-graph.json") },
+    { name: "Concept Graph Markdown", path: join(OUT, "concepts", "concept-graph.md") },
+    { name: "Concept State", path: join(OUT, "concepts", "concept-state.json") },
+    { name: "Concept State Markdown", path: join(OUT, "concepts", "concept-state.md") },    { name: "Opening Report", path: join(OUT, "openings", "opening-report.json") },
+    { name: "Opening Report Markdown", path: join(OUT, "openings", "opening-report.md") },
+    { name: "Opening Mistakes", path: join(OUT, "openings", "opening-mistakes.json") },
+    { name: "Opening Mistakes Markdown", path: join(OUT, "openings", "opening-mistakes.md") },
+    { name: "Repertoire Map", path: join(OUT, "repertoire", "repertoire-map.json") },
+    { name: "Repertoire Map Markdown", path: join(OUT, "repertoire", "repertoire-map.md") },
+    { name: "Repertoire Review", path: join(OUT, "repertoire", "repertoire-review.json") },
+    { name: "Repertoire Review Markdown", path: join(OUT, "repertoire", "repertoire-review.md") },
+    { name: "Repertoire Transfer", path: join(OUT, "repertoire", "repertoire-transfer.json") },
+    { name: "Repertoire Transfer Markdown", path: join(OUT, "repertoire", "repertoire-transfer.md") },
+    { name: "Repertoire Transfer Coaching", path: join(OUT, "repertoire", "repertoire-transfer-coaching.json") },
+    { name: "Repertoire Transfer Coaching Markdown", path: join(OUT, "repertoire", "repertoire-transfer-coaching.md") },
+    { name: "Repertoire Drill Memory", path: join(OUT, "repertoire", "repertoire-drill-memory.json") },
+    { name: "Repertoire Drill Memory Markdown", path: join(OUT, "repertoire", "repertoire-drill-memory.md") },
+    { name: "Repertoire Drill Queue", path: join(OUT, "repertoire", "repertoire-drill-queue.json") },
+    { name: "Repertoire Drill Queue Markdown", path: join(OUT, "repertoire", "repertoire-drill-queue.md") },
+    { name: "Repertoire Drill Sessions", path: join(OUT, "repertoire", "repertoire-drill-sessions.json") },
+    { name: "Repertoire Drill Events", path: join(OUT, "repertoire", "repertoire-drill-events.jsonl") },
+    { name: "Repertoire Repair", path: join(OUT, "repertoire", "repertoire-repair.json") },
+    { name: "Repertoire Repair Markdown", path: join(OUT, "repertoire", "repertoire-repair.md") },
+    { name: "Repertoire Repair Queue", path: join(OUT, "repertoire", "repertoire-repair-queue.json") },
+    { name: "Repertoire Repair Queue Markdown", path: join(OUT, "repertoire", "repertoire-repair-queue.md") },
+    { name: "Repertoire Repair Outcomes", path: join(OUT, "repertoire", "repertoire-repair-outcomes.json") },
+    { name: "Repertoire Repair Outcomes Markdown", path: join(OUT, "repertoire", "repertoire-repair-outcomes.md") },
+    { name: "Repertoire Repair History", path: join(OUT, "repertoire", "repertoire-repair-history.jsonl") },
     { name: "Training Objective", path: join(OUT, "objective", "training-objective.json") },
     { name: "Objective Progress", path: join(OUT, "objective", "objective-progress.json") },
     { name: "Objective Coaching", path: join(OUT, "objective", "objective-coaching.json") },
@@ -457,6 +577,53 @@ export async function loadImportOverview(): Promise<ImportAnalysisOverview> {
 export async function loadLastImportAnalysis(): Promise<ImportAnalysisStatus | null> {
   return loadImportAnalysisStatus();
 }
+
+export async function loadGameDiagnosis(gameId: string): Promise<GameLossDiagnosis | null> {
+  return loadJson<GameLossDiagnosis>(
+    join(OUT, "games", gameId, "diagnosis.json"),
+    isGameLossDiagnosis
+  );
+}
+
+export async function loadAllGameDiagnoses(): Promise<GameLossDiagnosis[]> {
+  const gamesDir = join(OUT, "games");
+  try {
+    const entries = await readdir(gamesDir, { withFileTypes: true });
+    const diagnoses: GameLossDiagnosis[] = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const diagnosis = await loadJson<GameLossDiagnosis>(
+        join(gamesDir, entry.name, "diagnosis.json"),
+        isGameLossDiagnosis
+      );
+      if (diagnosis) diagnoses.push(diagnosis);
+    }
+    diagnoses.sort(
+      (a, b) =>
+        new Date(b.diagnosedAt).getTime() - new Date(a.diagnosedAt).getTime()
+    );
+    return diagnoses;
+  } catch {
+    return [];
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

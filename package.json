@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.29.3",
   "scripts": {
-    "start": "cd apps/web && npx next dev --webpack -p 3000",
+    "start": "node scripts/dev-web.mjs",
     "build": "pnpm -r build",
-    "dev:web": "cd apps/web && npx next dev --webpack -p 3000",
+    "dev:web": "node scripts/dev-web.mjs",
     "dev:worker": "pnpm --filter worker dev",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",

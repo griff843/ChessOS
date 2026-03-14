@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import type { SessionPerspective } from "@/lib/player-perspective";
 import { generateNewSession } from "@/app/actions/generation";
 import { Plus, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -14,6 +15,7 @@ export function GenerateSessionButton({
 }: GenerateSessionButtonProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [perspective, setPerspective] = useState<SessionPerspective>("hero");
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -22,7 +24,7 @@ export function GenerateSessionButton({
   const handleClick = () => {
     setFeedback(null);
     startTransition(async () => {
-      const result = await generateNewSession();
+      const result = await generateNewSession(perspective);
       if (result.success && result.sessionId) {
         setFeedback({
           type: "success",
@@ -40,6 +42,17 @@ export function GenerateSessionButton({
 
   return (
     <div className="flex items-center gap-3">
+      <select
+        value={perspective}
+        onChange={(event) => setPerspective(event.target.value as SessionPerspective)}
+        disabled={pending}
+        className="rounded-lg border border-border-subtle bg-surface px-3 py-2 text-sm text-text-primary"
+        aria-label="Session perspective"
+      >
+        <option value="hero">My Moves</option>
+        <option value="opponent">Opponent Moves</option>
+        <option value="both">Both Sides</option>
+      </select>
       {feedback && (
         <div className="flex items-center gap-1.5">
           {feedback.type === "success" ? (

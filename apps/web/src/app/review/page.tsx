@@ -12,6 +12,7 @@ import { RefreshInsightsButton } from "@/components/ui/refresh-insights-button";
 import { MasteryBadge, GradingBadge, Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { formatRelativeDate, formatDate } from "@/lib/utils";
+import { StartReviewSessionButton } from "@/components/review/start-review-session-button";
 import Link from "next/link";
 import { RefreshCw, AlertTriangle, Clock, Shield, ArrowRight } from "lucide-react";
 import type { ReviewQueueEntry } from "@/lib/types";
@@ -163,6 +164,7 @@ export default async function ReviewPage() {
       <PageHeader
         title="Review Queue"
         subtitle={`${queue.totalEntries} exercises ready for review · Updated ${formatRelativeDate(queue.generatedAt)}`}
+        action={<StartReviewSessionButton hasItems={queue.totalEntries > 0} />}
       />
 
       <div className="mb-6 grid grid-cols-3 gap-4">

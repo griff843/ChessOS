@@ -20,7 +20,12 @@ import {
   type EngineMode,
   type EvaluatedPosition,
 } from "../../../../packages/engine/src/index";
-import { buildGameDataset, type TrainingDatasetRow } from "@chess-os/training";
+import {
+  buildGameDataset,
+  inferHeroColorForGame,
+  parsePgnHeaders,
+  type TrainingDatasetRow,
+} from "@chess-os/training";
 
 export interface ImportBatchResult {
   gamesProcessed: number;
@@ -62,6 +67,11 @@ export async function runImportEvaluationBatch(
       const filePath = resolve(dirPath, file);
       const gameId = basename(file, extname(file));
       const pgn = await readFile(filePath, "utf-8");
+      const heroColor = inferHeroColorForGame({
+        gameId,
+        headers: parsePgnHeaders(pgn),
+        preferredPlayerName: process.env.CHESS_OS_PLAYER_NAME ?? null,
+      });
       const { snapshots } = pgnToSnapshots(pgn, gameId);
 
       const evaluated: EvaluatedPosition[] = [];
@@ -87,7 +97,9 @@ export async function runImportEvaluationBatch(
       };
       for (const classification of classifications) counts[classification.label]++;
 
-      const rows: TrainingDatasetRow[] = buildGameDataset(evaluated, features, classifications);
+      const rows: TrainingDatasetRow[] = buildGameDataset(evaluated, features, classifications, {
+        heroColor,
+      });
       exportTrainingDataset({
         gameId,
         dataset: {

@@ -24,6 +24,15 @@ import {
   buildPatternIntelligence,
   buildPatternLibrary,
   buildReadinessForecast,
+  buildRepertoireMap,
+  buildRepertoireReview,
+  buildRepertoireTransfer,
+  buildRepertoireTransferCoaching,
+  buildRepertoireDrillMemory,
+  buildRepertoireDrillQueue,
+  buildRepertoireRepair,
+  buildRepertoireRepairOutcomes,
+  buildRepertoireRepairQueue,
   buildReviewQueue,
   buildReviewReport,
   buildSessionSnapshots,
@@ -33,6 +42,7 @@ import {
   buildTrendReport,
   buildWeaknessProfile,
   classifyOpening,
+  compareGamesToRepertoire,
   computeDifficultyCalibration,
   computeDifficultyPolicy,
   computeRecencyWeights,
@@ -52,12 +62,23 @@ import {
   determineTrendDirections,
   extractTrendWeights,
   formatConceptGraphMd,
+  formatConceptStateMd,
   formatInterventionEffectivenessMd,
   formatLearningModelMd,
   formatObjectiveCoachingMd,
   formatObjectiveEscalationMd,
   formatObjectivePortfolioMd,
   formatOpeningReportMd,
+  formatOpeningMistakesMd,
+  formatRepertoireMapMd,
+  formatRepertoireReviewMd,
+  formatRepertoireTransferMd,
+  formatRepertoireTransferCoachingMd,
+  formatRepertoireDrillMemoryMd,
+  formatRepertoireDrillQueueMd,
+  formatRepertoireRepairMd,
+  formatRepertoireRepairOutcomesMd,
+  formatRepertoireRepairQueueMd,
   formatSessionMd,
   formatTrendSummaryMd,
   initProgressStore,
@@ -69,13 +90,16 @@ import {
   refreshDueStatus,
   selectTrainingObjective,
   serializeProgressStore,
+  diagnoseGameLoss,
 } from "@chess-os/training";
 import type {
   ObjectiveSessionEvidence,
   ProgressStore,
   SessionAnalytics,
   SessionConfig,
+  SessionPerspective,
   StudySession,
+  TrainingDatasetRow,
 } from "@chess-os/training";
 import {
   loadAllStudySessionsRaw,
@@ -84,6 +108,9 @@ import {
   loadHistoryRecords,
   loadObjectiveProgressRaw,
   loadProgressStoreRaw,
+  loadRepertoireDrillEventsRaw,
+  loadRepertoireRepairOutcomesRaw,
+  loadRepertoireDrillSessionsRaw,
   OUT,
 } from "@/lib/generation-server";
 
@@ -92,6 +119,20 @@ export interface GenerateSessionResult {
   sessionId: string | null;
   exerciseCount: number;
   error: string | null;
+}
+
+function filterExercisesForPerspective(
+  exercises: Awaited<ReturnType<typeof loadExerciseCorpusRaw>>,
+  perspective: SessionPerspective
+) {
+  if (perspective === "both") return exercises;
+  const exact = exercises.filter((exercise) => exercise.perspective === perspective);
+  if (exact.length > 0) return exact;
+  if (perspective === "hero") {
+    const fallback = exercises.filter((exercise) => exercise.perspective !== "opponent");
+    if (fallback.length > 0) return fallback;
+  }
+  return [];
 }
 
 export interface RefreshInsightsResult {
@@ -209,6 +250,21 @@ function deriveInterventionStartedAt(
 interface PgnOpeningSource {
   gameId: string;
   moves: string[];
+  result: "1-0" | "0-1" | "1/2-1/2" | "*";
+}
+
+function parsePgnResult(raw: string): PgnOpeningSource["result"] {
+  const match = raw.match(/^\[Result\s+"([^"]+)"\]/m);
+  const value = match?.[1];
+  if (value === "1-0" || value === "0-1" || value === "1/2-1/2") return value;
+  return "*";
+}
+
+function toSourceGameResult(result: PgnOpeningSource["result"]): "win" | "loss" | "draw" | "unknown" {
+  if (result === "1-0") return "win";
+  if (result === "0-1") return "loss";
+  if (result === "1/2-1/2") return "draw";
+  return "unknown";
 }
 
 async function loadPgnOpeningSources(): Promise<PgnOpeningSource[]> {
@@ -221,7 +277,7 @@ async function loadPgnOpeningSources(): Promise<PgnOpeningSource[]> {
       const gameId = basename(file.name, extname(file.name));
       const raw = await readFile(join(pgnDir, file.name), "utf-8");
       const moves = parsePgnMoves(raw).map((entry) => entry.move);
-      sources.push({ gameId, moves });
+      sources.push({ gameId, moves, result: parsePgnResult(raw) });
     }
     return sources.sort((a, b) => a.gameId.localeCompare(b.gameId));
   } catch {
@@ -236,10 +292,13 @@ async function buildProductIntelligenceArtifacts(args: {
   history: Awaited<ReturnType<typeof loadHistoryRecords>>;
 }) {
   const conceptGraph = buildConceptGraph(args.now);
+  const repertoireMap = buildRepertoireMap(args.now);
   const openingSources = await loadPgnOpeningSources();
+  const drillEvents = await loadRepertoireDrillEventsRaw();
+  const priorRepairOutcomes = await loadRepertoireRepairOutcomesRaw();
   const classifications = openingSources.map((source) => classifyOpening(source.gameId, source.moves));
   const openingLookup = {
-    byGameId: Object.fromEntries(classifications.map((entry) => [entry.gameId, entry.openingFamily])),
+    byGameId: Object.fromEntries(classifications.map((entry) => [entry.sourceGameId, entry.openingFamily])),
   };
   const learningModel = deriveLearningModel({
     generatedAt: args.now,
@@ -255,6 +314,61 @@ async function buildProductIntelligenceArtifacts(args: {
     classifications,
     exercises: args.exercises,
   });
+  const repertoireComparisons = compareGamesToRepertoire({
+    repertoireMap,
+    sourceGames: openingSources.map((source) => ({
+      sourceGameId: source.gameId,
+      sourceMoves: source.moves,
+      sourceResult: toSourceGameResult(source.result),
+    })),
+    classifications,
+    openingMistakes: openingArtifacts.mistakes,
+  });
+  const repertoireReview = buildRepertoireReview({
+    generatedAt: args.now,
+    comparisons: repertoireComparisons,
+  });
+  const repertoireTransfer = buildRepertoireTransfer({
+    generatedAt: args.now,
+    comparisons: repertoireComparisons,
+  });
+  const repertoireDrillMemory = buildRepertoireDrillMemory({
+    generatedAt: args.now,
+    repertoireMap,
+    review: repertoireReview,
+    transfer: repertoireTransfer,
+    drillEvents,
+  });
+  const repertoireTransferCoaching = buildRepertoireTransferCoaching({
+    generatedAt: args.now,
+    review: repertoireReview,
+    transfer: repertoireTransfer,
+    drillMemory: repertoireDrillMemory,
+  });
+  const repertoireRepair = buildRepertoireRepair({
+    generatedAt: args.now,
+    comparisons: repertoireComparisons,
+    transferCoaching: repertoireTransferCoaching,
+    drillMemory: repertoireDrillMemory,
+  });
+  const repertoireRepairQueue = buildRepertoireRepairQueue({
+    generatedAt: args.now,
+    repair: repertoireRepair,
+    drillMemory: repertoireDrillMemory,
+  });
+  const repertoireRepairOutcomes = buildRepertoireRepairOutcomes({
+    generatedAt: args.now,
+    repair: repertoireRepair,
+    comparisons: repertoireComparisons,
+    drillEvents,
+    priorHistory: priorRepairOutcomes,
+  });
+  const repertoireDrillQueue = buildRepertoireDrillQueue({
+    generatedAt: args.now,
+    memory: repertoireDrillMemory,
+    repairQueue: repertoireRepairQueue,
+    repairOutcomes: repertoireRepairOutcomes,
+  });
   const learningPriority = buildLearningPriorityLookup(args.exercises, conceptGraph, learningModel, openingLookup);
 
   return {
@@ -265,6 +379,15 @@ async function buildProductIntelligenceArtifacts(args: {
     learningPriority,
     openingReport: openingArtifacts.report,
     openingMistakes: openingArtifacts.mistakes,
+    repertoireMap,
+    repertoireReview,
+    repertoireTransfer,
+    repertoireDrillMemory,
+    repertoireDrillQueue,
+    repertoireTransferCoaching,
+    repertoireRepair,
+    repertoireRepairQueue,
+    repertoireRepairOutcomes,
   };
 }
 
@@ -274,6 +397,11 @@ async function persistProductIntelligenceArtifacts(
   const learningDir = join(OUT, "learning");
   const conceptsDir = join(OUT, "concepts");
   const openingsDir = join(OUT, "openings");
+  const repertoireDir = join(OUT, "repertoire");
+  const [drillEvents, drillSessions] = await Promise.all([
+    loadRepertoireDrillEventsRaw(),
+    loadRepertoireDrillSessionsRaw(),
+  ]);
 
   await Promise.all([
     atomicWriteFile(join(learningDir, "learning-model.json"), JSON.stringify(intelligence.learningModel, null, 2)),
@@ -281,9 +409,38 @@ async function persistProductIntelligenceArtifacts(
     atomicWriteFile(join(conceptsDir, "concept-graph.json"), JSON.stringify(intelligence.conceptGraph, null, 2)),
     atomicWriteFile(join(conceptsDir, "concept-graph.md"), formatConceptGraphMd(intelligence.conceptGraph)),
     atomicWriteFile(join(conceptsDir, "concept-state.json"), JSON.stringify(intelligence.conceptState, null, 2)),
+    atomicWriteFile(join(conceptsDir, "concept-state.md"), formatConceptStateMd(intelligence.conceptState)),
     atomicWriteFile(join(openingsDir, "opening-report.json"), JSON.stringify(intelligence.openingReport, null, 2)),
     atomicWriteFile(join(openingsDir, "opening-report.md"), formatOpeningReportMd(intelligence.openingReport, intelligence.openingMistakes)),
-    atomicWriteFile(join(openingsDir, "opening-mistakes.json"), JSON.stringify(intelligence.openingMistakes, null, 2))
+    atomicWriteFile(join(openingsDir, "opening-mistakes.json"), JSON.stringify(intelligence.openingMistakes, null, 2)),
+    atomicWriteFile(join(openingsDir, "opening-mistakes.md"), formatOpeningMistakesMd(intelligence.openingMistakes)),
+    atomicWriteFile(join(repertoireDir, "repertoire-map.json"), JSON.stringify(intelligence.repertoireMap, null, 2)),
+    atomicWriteFile(join(repertoireDir, "repertoire-map.md"), formatRepertoireMapMd(intelligence.repertoireMap)),
+    atomicWriteFile(join(repertoireDir, "repertoire-review.json"), JSON.stringify(intelligence.repertoireReview, null, 2)),
+    atomicWriteFile(join(repertoireDir, "repertoire-review.md"), formatRepertoireReviewMd(intelligence.repertoireReview)),
+    atomicWriteFile(join(repertoireDir, "repertoire-transfer.json"), JSON.stringify(intelligence.repertoireTransfer, null, 2)),
+    atomicWriteFile(join(repertoireDir, "repertoire-transfer.md"), formatRepertoireTransferMd(intelligence.repertoireTransfer)),
+    atomicWriteFile(join(repertoireDir, "repertoire-drill-memory.json"), JSON.stringify(intelligence.repertoireDrillMemory, null, 2)),
+    atomicWriteFile(join(repertoireDir, "repertoire-drill-memory.md"), formatRepertoireDrillMemoryMd(intelligence.repertoireDrillMemory)),
+    atomicWriteFile(join(repertoireDir, "repertoire-drill-queue.json"), JSON.stringify(intelligence.repertoireDrillQueue, null, 2)),
+    atomicWriteFile(join(repertoireDir, "repertoire-drill-queue.md"), formatRepertoireDrillQueueMd(intelligence.repertoireDrillQueue)),
+    atomicWriteFile(join(repertoireDir, "repertoire-repair.json"), JSON.stringify(intelligence.repertoireRepair, null, 2)),
+    atomicWriteFile(join(repertoireDir, "repertoire-repair.md"), formatRepertoireRepairMd(intelligence.repertoireRepair)),
+    atomicWriteFile(join(repertoireDir, "repertoire-repair-queue.json"), JSON.stringify(intelligence.repertoireRepairQueue, null, 2)),
+    atomicWriteFile(join(repertoireDir, "repertoire-repair-queue.md"), formatRepertoireRepairQueueMd(intelligence.repertoireRepairQueue)),
+    atomicWriteFile(join(repertoireDir, "repertoire-repair-outcomes.json"), JSON.stringify(intelligence.repertoireRepairOutcomes, null, 2)),
+    atomicWriteFile(join(repertoireDir, "repertoire-repair-outcomes.md"), formatRepertoireRepairOutcomesMd(intelligence.repertoireRepairOutcomes)),
+    atomicWriteFile(
+      join(repertoireDir, "repertoire-repair-history.jsonl"),
+      intelligence.repertoireRepairOutcomes.entries.map((entry) => JSON.stringify(entry)).join("\n") + (intelligence.repertoireRepairOutcomes.entries.length > 0 ? "\n" : "")
+    ),
+    atomicWriteFile(join(repertoireDir, "repertoire-drill-sessions.json"), JSON.stringify(drillSessions, null, 2)),
+    atomicWriteFile(
+      join(repertoireDir, "repertoire-drill-events.jsonl"),
+      drillEvents.map((entry) => JSON.stringify(entry)).join("\n") + (drillEvents.length > 0 ? "\n" : "")
+    ),
+    atomicWriteFile(join(repertoireDir, "repertoire-transfer-coaching.json"), JSON.stringify(intelligence.repertoireTransferCoaching, null, 2)),
+    atomicWriteFile(join(repertoireDir, "repertoire-transfer-coaching.md"), formatRepertoireTransferCoachingMd(intelligence.repertoireTransferCoaching))
   ]);
 }
 async function buildObjectiveLifecycleBundle(args: {
@@ -480,7 +637,9 @@ async function buildObjectiveLifecycleBundle(args: {
   };
 }
 
-export async function generateNewSession(): Promise<GenerateSessionResult> {
+export async function generateNewSession(
+  perspective: SessionPerspective = "hero"
+): Promise<GenerateSessionResult> {
   if (generating) {
     return {
       success: false,
@@ -513,7 +672,20 @@ export async function generateNewSession(): Promise<GenerateSessionResult> {
       };
     }
 
-    const scores = exercises.map((ex) => ex.explanation.difficultyScore);
+    const perspectiveExercises = filterExercisesForPerspective(exercises, perspective);
+    if (perspectiveExercises.length === 0) {
+      return {
+        success: false,
+        sessionId: null,
+        exerciseCount: 0,
+        error:
+          perspective === "opponent"
+            ? "No opponent-side exercises are available for the current corpus."
+            : "No player-side exercises are available for the current corpus.",
+      };
+    }
+
+    const scores = perspectiveExercises.map((ex) => ex.explanation.difficultyScore);
     const calibration = computeDifficultyCalibration(scores);
 
     await atomicWriteFile(
@@ -525,9 +697,9 @@ export async function generateNewSession(): Promise<GenerateSessionResult> {
     let store: ProgressStore;
     const existing = await loadProgressStoreRaw();
     if (existing) {
-      store = mergeProgressStore(existing, exercises, calibration);
+      store = mergeProgressStore(existing, perspectiveExercises, calibration);
     } else {
-      store = initProgressStore(exercises, calibration);
+      store = initProgressStore(perspectiveExercises, calibration);
     }
 
     const now = new Date().toISOString();
@@ -538,13 +710,13 @@ export async function generateNewSession(): Promise<GenerateSessionResult> {
     const lifecycle = await buildObjectiveLifecycleBundle({
       now,
       store,
-      exercises,
+      exercises: perspectiveExercises,
       history,
       analyticsMap,
     });
     const intelligence = await buildProductIntelligenceArtifacts({
       now,
-      exercises,
+      exercises: perspectiveExercises,
       store,
       history,
     });
@@ -564,7 +736,7 @@ export async function generateNewSession(): Promise<GenerateSessionResult> {
 
     const weights = extractTrendWeights(lifecycle.trendProfile);
     const prioritized = rankAdaptiveCandidates(
-      exercises,
+      perspectiveExercises,
       store,
       weights,
       lifecycle.patternIntelligence,
@@ -586,11 +758,11 @@ export async function generateNewSession(): Promise<GenerateSessionResult> {
 
     const useMixed = config.exerciseTypeMix !== undefined;
     const mixedResult = useMixed
-      ? buildMixedSession(coachedRanked, calibration, config, config.exerciseTypeMix)
+      ? buildMixedSession(coachedRanked, calibration, config, config.exerciseTypeMix, { selectedPerspective: perspective })
       : null;
     const session = mixedResult
       ? mixedResult.session
-      : buildStudySession(coachedRanked, calibration, config).session;
+      : buildStudySession(coachedRanked, calibration, config, { selectedPerspective: perspective }).session;
 
     session.metadata.trainingObjective = lifecycle.objective.currentObjective;
     session.metadata.objectiveReason = lifecycle.objective.objectiveReason;
@@ -876,17 +1048,49 @@ export async function refreshInsights(): Promise<RefreshInsightsResult> {
       atomicWriteFile(join(dashDir, "review-report.json"), JSON.stringify(reviewReport, null, 2)),
     ]);
 
+    const curriculumPlan = buildCurriculumPlan(
+      lifecycle.overview,
+      lifecycle.mistakePatterns,
+      lifecycle.trendProfile,
+      lifecycle.reviewQueue,
+      store,
+      lifecycle.focusRecommendations,
+      intelligence.conceptState,
+      intelligence.openingReport,
+      intelligence.repertoireReview,
+      intelligence.repertoireTransferCoaching,
+      intelligence.repertoireDrillQueue,
+      intelligence.repertoireRepairQueue,
+      intelligence.repertoireRepairOutcomes
+    );
     const studyPlan = buildStudyPlan(
       lifecycle.focusRecommendations,
       reviewReport,
       lifecycle.trendProfile,
-      store
+      store,
+      intelligence.conceptState,
+      intelligence.openingReport,
+      intelligence.repertoireReview,
+      intelligence.repertoireTransferCoaching,
+      intelligence.repertoireDrillQueue,
+      intelligence.repertoireRepairQueue,
+      intelligence.repertoireRepairOutcomes
     );
     const coachingSummary = buildCoachingSummary(
       lifecycle.overview,
       lifecycle.mistakePatterns,
       studyPlan,
-      lifecycle.trendProfile
+      lifecycle.trendProfile,
+      intelligence.conceptState,
+      intelligence.openingReport,
+      intelligence.repertoireReview,
+      intelligence.repertoireTransfer,
+      intelligence.repertoireTransferCoaching,
+      intelligence.repertoireDrillMemory,
+      intelligence.repertoireDrillQueue,
+      intelligence.repertoireRepair,
+      intelligence.repertoireRepairQueue,
+      intelligence.repertoireRepairOutcomes
     );
 
     const coachDir = join(OUT, "coach");
@@ -904,7 +1108,7 @@ export async function refreshInsights(): Promise<RefreshInsightsResult> {
 
     await atomicWriteFile(
       join(OUT, "curriculum", "curriculum-plan.json"),
-      JSON.stringify(lifecycle.curriculumPlan, null, 2)
+      JSON.stringify(curriculumPlan, null, 2)
     );
 
     let patternLibrary = null;
@@ -1019,6 +1223,49 @@ export async function refreshInsights(): Promise<RefreshInsightsResult> {
     refreshing = false;
   }
 }
+
+export interface GenerateDiagnosisResult {
+  success: boolean;
+  gameId: string;
+  error: string | null;
+}
+
+export async function generateGameDiagnosis(
+  gameId: string,
+  heroColor?: "white" | "black" | null
+): Promise<GenerateDiagnosisResult> {
+  try {
+    const datasetPath = join(OUT, "games", gameId, "training-dataset.json");
+    const raw = await readFile(datasetPath, "utf-8");
+    const parsed = JSON.parse(raw) as { rows: TrainingDatasetRow[] };
+
+    if (!parsed.rows || parsed.rows.length === 0) {
+      return { success: false, gameId, error: "No dataset rows found for this game." };
+    }
+
+    const diagnosis = diagnoseGameLoss(parsed.rows, heroColor);
+
+    const diagnosisDir = join(OUT, "games", gameId);
+    await mkdir(diagnosisDir, { recursive: true });
+    await atomicWriteFile(
+      join(diagnosisDir, "diagnosis.json"),
+      JSON.stringify(diagnosis, null, 2)
+    );
+
+    return { success: true, gameId, error: null };
+  } catch (err) {
+    return {
+      success: false,
+      gameId,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+
+
+
+
 
 
 

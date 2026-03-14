@@ -1,4 +1,5 @@
 import type { EvaluatedPosition } from "@chess-os/engine";
+import type { ChessColor } from "@chess-os/chess-core";
 import type { FeatureVector, MistakeClassification } from "@chess-os/classifier";
 import type { TrainingDatasetRow } from "./types";
 import { buildDatasetRow } from "./build-dataset-row";
@@ -14,12 +15,13 @@ import { buildDatasetRow } from "./build-dataset-row";
 export function buildGameDataset(
   evaluated: EvaluatedPosition[],
   features: FeatureVector[],
-  classifications: MistakeClassification[]
+  classifications: MistakeClassification[],
+  options: { heroColor?: ChessColor | null } = {}
 ): TrainingDatasetRow[] {
   const rows: TrainingDatasetRow[] = [];
 
   for (let i = 0; i < classifications.length; i++) {
-    rows.push(buildDatasetRow(evaluated[i], features[i], classifications[i]));
+    rows.push(buildDatasetRow(evaluated[i], features[i], classifications[i], options.heroColor ?? null));
   }
 
   return rows;

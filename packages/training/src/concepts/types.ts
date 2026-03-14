@@ -1,20 +1,45 @@
 ﻿import type { LessonCategory, ReasonCode, TrainingExercise } from "../exercises/types";
+import type { LearningConceptState } from "../learning/types";
+import type { OpeningMistakeTheme } from "../openings/types";
 
 export type ConceptCategory = "tactical" | "positional" | "endgame" | "opening" | "meta";
 export type DifficultyBand = "foundation" | "core" | "advanced";
+export type ConceptSourceTheme =
+  | "hanging_piece"
+  | "fork"
+  | "pin"
+  | "skewer"
+  | "discovered_attack"
+  | "overload"
+  | "deflection"
+  | "back_rank"
+  | "king_attack"
+  | "endgame_conversion"
+  | "opening_development"
+  | "king_safety"
+  | "center_control"
+  | "pawn_structure"
+  | "initiative"
+  | "piece_activity"
+  | "tactical_pattern_recognition"
+  | "calculation_stability"
+  | "visualization_depth";
 
 export interface ConceptNode {
   conceptKey: string;
   conceptName: string;
   conceptCategory: ConceptCategory;
+  description: string;
   parentConcepts: string[];
   childConcepts: string[];
   relatedConcepts: string[];
   prerequisiteConcepts: string[];
   difficultyBand: DifficultyBand;
   trainingTags: string[];
-  lessonCategories: LessonCategory[];
-  reasonCodes: ReasonCode[];
+  sourceThemes: ConceptSourceTheme[];
+  sourceLessonCategories: LessonCategory[];
+  sourceReasonCodes: ReasonCode[];
+  sourceOpeningThemes: OpeningMistakeTheme[];
   openingFamilies?: string[];
 }
 
@@ -32,7 +57,9 @@ export interface ConceptGraph {
 export interface ConceptMapping {
   primaryConcept: string;
   relatedConcepts: string[];
-  source: "lesson_category" | "reason_code" | "opening_family";
+  prerequisiteConcepts: string[];
+  broaderCluster: ConceptCategory;
+  source: "lesson_category" | "reason_code" | "opening_family" | "opening_theme" | "source_theme";
 }
 
 export interface ConceptStateEntry {
@@ -46,10 +73,15 @@ export interface ConceptStateEntry {
   exposureCount: number;
   successCount: number;
   failureCount: number;
+  recentPerformance: number;
+  trendDirection: LearningConceptState["trend"];
+  recurrencePressure: number;
+  reviewPriority: number;
   prerequisiteGaps: string[];
   adjacentWeaknesses: string[];
   reinforcementPath: string[];
   status: "mastered" | "stable" | "at_risk" | "unstable" | "unseen";
+  explanation: string;
 }
 
 export interface ConceptStateReport {
@@ -63,6 +95,31 @@ export interface ConceptStateReport {
     cluster: string;
     concepts: string[];
     averageForgettingRisk: number;
+    averageReviewPriority: number;
+  }>;
+  topUnstableConcepts: Array<{
+    conceptKey: string;
+    conceptName: string;
+    conceptCategory: ConceptCategory;
+    reviewPriority: number;
+    recurrencePressure: number;
+    prerequisiteGaps: string[];
+  }>;
+  strongestConcepts: Array<{
+    conceptKey: string;
+    conceptName: string;
+    conceptCategory: ConceptCategory;
+    masteryScore: number;
+    stabilityScore: number;
+  }>;
+  recommendedFocuses: Array<{
+    conceptKey: string;
+    conceptName: string;
+    explanation: string;
+    reviewPriority: number;
+    prerequisiteGaps: string[];
+    adjacentWeaknesses: string[];
+    reinforcementPath: string[];
   }>;
 }
 
@@ -82,11 +139,11 @@ export function mapExerciseToConcepts(
 ): string[] {
   const matches: string[] = [];
   for (const concept of graph.concepts) {
-    if (concept.lessonCategories.includes(exercise.explanation.lessonCategory)) {
+    if (concept.sourceLessonCategories.includes(exercise.explanation.lessonCategory)) {
       matches.push(concept.conceptKey);
       continue;
     }
-    if (exercise.explanation.reasonCodes.some((code) => concept.reasonCodes.includes(code))) {
+    if (exercise.explanation.reasonCodes.some((code) => concept.sourceReasonCodes.includes(code))) {
       matches.push(concept.conceptKey);
       continue;
     }
@@ -96,3 +153,4 @@ export function mapExerciseToConcepts(
   }
   return uniqueConceptKeys(matches);
 }
+

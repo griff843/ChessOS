@@ -1,5 +1,6 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
+  distDir: process.env.CHESS_OS_NEXT_DIST_DIR || ".next",
   transpilePackages: [
     "@chess-os/chess-core",
     "@chess-os/training",

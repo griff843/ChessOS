@@ -11,6 +11,7 @@
 import type { ChessColor } from "@chess-os/chess-core";
 import type { GamePhase, MistakeLabel } from "@chess-os/classifier";
 import type { CriticalityFactors } from "../intelligence/types";
+import type { ExercisePerspective } from "../perspective/player-perspective";
 import type { TrainingTargetType, TargetPriorityFactors } from "../targets/types";
 
 // ── Lesson Category Taxonomy ──────────────────────────────────────────
@@ -101,6 +102,8 @@ export interface TrainingExercise {
   ply: number;
   fen: string;
   sideToMove: ChessColor;
+  heroColor: ChessColor | null;
+  perspective: ExercisePerspective;
   phase: GamePhase;
 
   // Played move

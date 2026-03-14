@@ -6,6 +6,7 @@ import type { ChessColor } from "@chess-os/chess-core";
 import type { GamePhase } from "@chess-os/classifier";
 import type { ExerciseType, ExerciseTypeMix } from "../cognitive/types";
 import type { LessonCategory, DifficultyEstimate } from "../exercises/types";
+import type { ExercisePerspective, SessionPerspective } from "../perspective/player-perspective";
 import type {
   ObjectiveEscalationStrength,
   ObjectiveEscalationVerdict,
@@ -49,6 +50,8 @@ export interface SessionExercise {
   ply: number;
   fen: string;
   sideToMove: ChessColor;
+  heroColor: ChessColor | null;
+  perspective: ExercisePerspective;
   phase: GamePhase;
   playedMoveSan: string;
   bestMoveSan: string | undefined;
@@ -69,6 +72,7 @@ export interface StudySession {
     difficultyDistribution: Record<DifficultyEstimate, number>;
     categoryDistribution: Record<string, number>;
     sourceGames: string[];
+    selectedPerspective?: SessionPerspective;
     exerciseTypeMix?: Record<string, number>;
     trainingObjective?: TrainingObjective;
     objectiveReason?: string;

@@ -8,6 +8,7 @@ import { Badge, DifficultyBadge } from "@/components/ui/badge";
 import { TrainingWorkflowGuide } from "@/components/onboarding/training-workflow-guide";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatCategory, formatRelativeDate, formatPercent } from "@/lib/utils";
+import { deriveSessionLabel } from "@/lib/session-label";
 import { Play, BookOpen, CheckCircle, Clock } from "lucide-react";
 import Link from "next/link";
 
@@ -59,7 +60,7 @@ export default async function SessionsPage() {
     <>
       <PageHeader
         title="Study Sessions"
-        subtitle={`${sessions.length} sessions Â· ${completedSessions.length} completed`}
+        subtitle={`${sessions.length} sessions · ${completedSessions.length} completed`}
         action={<GenerateSessionButton hasExercises={hasExercises} />}
       />
 
@@ -109,11 +110,11 @@ export default async function SessionsPage() {
                       <div className="flex items-center gap-2">
                         <Play className="h-4 w-4 text-accent" />
                         <span className="text-sm font-medium text-text-primary">
-                          {session.sessionId}
+                          {deriveSessionLabel(session)}
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-text-muted">
-                        Created {formatRelativeDate(session.createdAt)} Â· {session.exerciseCount} exercises
+                        Created {formatRelativeDate(session.createdAt)} · {session.exerciseCount} exercises
                       </p>
                     </div>
                     <Badge variant="accent">Study Now</Badge>
@@ -121,7 +122,7 @@ export default async function SessionsPage() {
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {Object.entries(session.metadata.categoryDistribution).map(([cat, count]) => (
                       <Badge key={cat} variant="muted">
-                        {formatCategory(cat)} Ã—{count}
+                        {formatCategory(cat)} ×{count}
                       </Badge>
                     ))}
                   </div>
@@ -163,10 +164,10 @@ export default async function SessionsPage() {
                       <CheckCircle className="h-4 w-4 text-success" />
                       <div>
                         <p className="text-sm font-medium text-text-primary">
-                          {session.sessionId}
+                          {deriveSessionLabel(session)}
                         </p>
                         <p className="text-xs text-text-muted">
-                          {formatRelativeDate(results.completedAt)} Â· {total} exercises
+                          {formatRelativeDate(results.completedAt)} · {total} exercises
                         </p>
                       </div>
                     </div>

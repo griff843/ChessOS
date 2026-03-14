@@ -41,6 +41,7 @@ export * from "./sessions/rebalance-difficulty";
 export * from "./sessions/select-session-exercises";
 export * from "./sessions/build-study-session";
 export * from "./sessions/format-session-md";
+export * from "./perspective/player-perspective";
 export * from "./progress/types";
 export * from "./progress/load-progress-store";
 export * from "./progress/save-progress-store";
@@ -144,7 +145,44 @@ export * from './concepts/types';
 export * from './concepts/build-concept-graph';
 export * from './concepts/derive-concept-state';
 export * from './concepts/format-concept-graph-md';
+export * from './concepts/format-concept-state-md';
 export * from './openings/types';
 export * from './openings/classify-opening';
 export * from './openings/build-opening-report';
 export * from './openings/format-opening-report-md';
+export * from './openings/format-opening-mistakes-md';
+
+
+
+
+export * from './repertoire/types';
+export * from './repertoire/build-repertoire-map';
+export * from './repertoire/compare-repertoire-games';
+export * from './repertoire/build-repertoire-review';
+export * from './repertoire/build-repertoire-transfer';
+export * from './repertoire/build-repertoire-transfer-coaching';
+export * from './repertoire/build-repertoire-drill-memory';
+export * from './repertoire/build-repertoire-drill-queue';
+export * from './repertoire/build-repertoire-repair';
+export * from './repertoire/build-repertoire-repair-queue';
+export * from './repertoire/build-repertoire-repair-outcomes';
+export * from './repertoire/build-repertoire-drill-session';
+export * from './repertoire/grade-repertoire-drill-attempt';
+export * from './repertoire/format-repertoire-map-md';
+export * from './repertoire/format-repertoire-review-md';
+export * from './repertoire/format-repertoire-transfer-md';
+export * from './repertoire/format-repertoire-transfer-coaching-md';
+export * from './repertoire/format-repertoire-drill-memory-md';
+export * from './repertoire/format-repertoire-drill-queue-md';
+export * from './repertoire/format-repertoire-repair-md';
+export * from './repertoire/format-repertoire-repair-queue-md';
+export * from './repertoire/format-repertoire-repair-outcomes-md';
+
+export * from './diagnosis/types';
+export * from './diagnosis/diagnose-game-loss';
+
+export * from './repair/types';
+export * from './repair/generate-repair-targets';
+export * from './repair/evaluate-repair-evidence';
+
+

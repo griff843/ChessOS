@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { generateNewSession, refreshInsights } from "@/app/actions/generation";
 import {
+  loadRepertoireDrillSession,
+  startRepertoireDrillSession,
+  submitRepertoireDrillAttempt,
+} from "@/app/repertoire/actions";
+import {
   loadSessionData,
   submitMove,
   submitRecallAttempt,
@@ -16,12 +21,12 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { action, ...params } = body;
+      const { action, ...params } = body;
 
   try {
     switch (action) {
       case "generateNewSession":
-        return NextResponse.json(await generateNewSession());
+        return NextResponse.json(await generateNewSession(params.perspective));
 
       case "refreshInsights":
         return NextResponse.json(await refreshInsights());
@@ -33,11 +38,26 @@ export async function POST(request: Request) {
 
       case "generateImportSession": {
         const { generateImportSession } = await import("@/app/actions/import-session");
-        return NextResponse.json(await generateImportSession(params.preset));
+        return NextResponse.json(await generateImportSession(params.preset, params.perspective));
       }
 
       case "loadImportOverview":
         return NextResponse.json(await loadImportOverview());
+
+      case "startRepertoireDrillSession":
+        return NextResponse.json(await startRepertoireDrillSession(params.preferredLineId));
+
+      case "loadRepertoireDrillSession":
+        return NextResponse.json(await loadRepertoireDrillSession(params.sessionId));
+
+      case "submitRepertoireDrillAttempt":
+        return NextResponse.json(
+          await submitRepertoireDrillAttempt({
+            sessionId: params.sessionId,
+            userResponse: params.userResponse,
+            confidence: params.confidence,
+          })
+        );
 
       case "loadSessionData":
         return NextResponse.json(await loadSessionData(params.sessionId));

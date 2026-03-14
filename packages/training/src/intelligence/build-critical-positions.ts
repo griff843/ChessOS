@@ -77,6 +77,8 @@ export function buildGameCriticalPositions(
       ply: row.ply,
       moveSan: row.moveSan,
       mover: row.mover,
+      heroColor: row.heroColor,
+      perspective: row.perspective,
       fen: row.fen,
       evalCp: row.evalCp,
       phase: row.phase,

@@ -9,6 +9,7 @@ import type {
   StudySession,
   DifficultyCalibration,
   SessionConfig,
+  SessionExercise,
 } from "./types";
 import { DEFAULT_SESSION_CONFIG } from "./types";
 import { computeDifficultyCalibration } from "./rebalance-difficulty";
@@ -42,7 +43,8 @@ function generateSessionId(exerciseIds: string[]): string {
 export function buildStudySession(
   exercises: TrainingExercise[],
   calibration?: DifficultyCalibration,
-  config: SessionConfig = DEFAULT_SESSION_CONFIG
+  config: SessionConfig = DEFAULT_SESSION_CONFIG,
+  metadata: { selectedPerspective?: import("../perspective/player-perspective").SessionPerspective } = {}
 ): { session: StudySession; calibration: DifficultyCalibration } {
   // 1. Compute calibration if not provided
   const cal =
@@ -52,7 +54,7 @@ export function buildStudySession(
     );
 
   // 2. Select exercises
-  const selected = selectSessionExercises(exercises, cal, config);
+  const selected: SessionExercise[] = selectSessionExercises(exercises, cal, config);
 
   // 3. Compute metadata
   const difficultyDistribution: Record<DifficultyEstimate, number> = {
@@ -84,6 +86,7 @@ export function buildStudySession(
       difficultyDistribution,
       categoryDistribution,
       sourceGames: [...sourceGames].sort(),
+      selectedPerspective: metadata.selectedPerspective,
     },
   };
 

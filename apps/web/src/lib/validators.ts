@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   LearnerOverview,
   TrendReport,
   ReviewReport,
@@ -22,8 +22,11 @@ import type {
   InterventionEffectivenessState,
   InterventionMemoryState,
   LearningModelArtifact,
+  GameLossDiagnosis,
 } from "./types";
 import type { ImportAnalysisStatus } from "./import-types";
+import type { ConceptGraphArtifact, ConceptStateReportArtifact } from "./types";
+import type { OpeningReportArtifact, OpeningMistakeArtifact, RepertoireDrillEventArtifact, RepertoireDrillMemoryArtifact, RepertoireDrillQueueArtifact, RepertoireDrillSessionSummaryArtifact, RepertoireMapArtifact, RepertoireRepairArtifact, RepertoireRepairOutcomesArtifact, RepertoireRepairQueueArtifact, RepertoireReviewArtifact, RepertoireTransferArtifact, RepertoireTransferCoachingArtifact } from "./types";
 
 function isObj(v: unknown): v is Record<string, unknown> {
   return v !== null && typeof v === "object" && !Array.isArray(v);
@@ -237,6 +240,28 @@ export function isLearningModelArtifact(v: unknown): v is LearningModelArtifact 
     typeof v.summary.averageForgettingRisk === "number"
   );
 }
+export function isConceptGraphArtifact(v: unknown): v is ConceptGraphArtifact {
+  if (!isObj(v)) return false;
+  return (
+    typeof v.generatedAt === "string" &&
+    Array.isArray(v.concepts) &&
+    Array.isArray(v.categorySummaries) &&
+    isObj(v.conceptIndex)
+  );
+}
+
+export function isConceptStateReportArtifact(v: unknown): v is ConceptStateReportArtifact {
+  if (!isObj(v)) return false;
+  return (
+    typeof v.generatedAt === "string" &&
+    Array.isArray(v.entries) &&
+    Array.isArray(v.prerequisiteHotspots) &&
+    Array.isArray(v.clusterWeaknesses) &&
+    Array.isArray(v.topUnstableConcepts) &&
+    Array.isArray(v.strongestConcepts) &&
+    Array.isArray(v.recommendedFocuses)
+  );
+}
 export function isImportAnalysisStatus(v: unknown): v is ImportAnalysisStatus {
   if (!isObj(v)) return false;
   return (
@@ -277,8 +302,150 @@ export const ARTIFACT_VALIDATORS: Record<string, ((v: unknown) => boolean) | und
   "Intervention Effectiveness": isInterventionEffectivenessState,
   "Intervention Memory": isInterventionMemoryState,
   "Learning Model": isLearningModelArtifact,
+  "Concept Graph": isConceptGraphArtifact,
+  "Concept State": isConceptStateReportArtifact,  "Opening Report": isOpeningReportArtifact,
+  "Opening Mistakes": isOpeningMistakeArtifactList,
+  "Repertoire Map": isRepertoireMapArtifact,
+  "Repertoire Review": isRepertoireReviewArtifact,
+  "Repertoire Transfer": isRepertoireTransferArtifact,
+  "Repertoire Transfer Coaching": isRepertoireTransferCoachingArtifact,
+  "Repertoire Drill Memory": isRepertoireDrillMemoryArtifact,
+  "Repertoire Drill Queue": isRepertoireDrillQueueArtifact,
+  "Repertoire Drill Sessions": isRepertoireDrillSessionSummaryArtifactList,
+  "Repertoire Drill Events": isRepertoireDrillEventArtifactList,
+  "Repertoire Repair": isRepertoireRepairArtifact,
+  "Repertoire Repair Queue": isRepertoireRepairQueueArtifact,
+  "Repertoire Repair Outcomes": isRepertoireRepairOutcomesArtifact,
   "Import Analysis Status": isImportAnalysisStatus,
+  "Game Loss Diagnosis": isGameLossDiagnosis,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+export function isOpeningReportArtifact(v: unknown): v is OpeningReportArtifact {
+  if (!isObj(v)) return false;
+  return (
+    typeof v.generatedAt === "string" &&
+    Array.isArray(v.classifications) &&
+    Array.isArray(v.familySummaries) &&
+    Array.isArray(v.topWeaknesses) &&
+    Array.isArray(v.recurringMistakes) &&
+    Array.isArray(v.recommendedTrainingThemes)
+  );
+}
+
+export function isOpeningMistakeArtifactList(v: unknown): v is OpeningMistakeArtifact[] {
+  return Array.isArray(v);
+}
+
+
+export function isRepertoireMapArtifact(v: unknown): v is RepertoireMapArtifact {
+  return isObj(v) && typeof v.generatedAt === 'string' && Array.isArray(v.repertoires) && isObj(v.lineIndex);
+}
+
+export function isRepertoireReviewArtifact(v: unknown): v is RepertoireReviewArtifact {
+  return isObj(v) && typeof v.generatedAt === 'string' && Array.isArray(v.comparisons) && Array.isArray(v.currentRepertoireHealth) && Array.isArray(v.topLinesToReview) && Array.isArray(v.firstDeviationPatterns) && Array.isArray(v.recommendedFocuses);
+}
+
+export function isRepertoireTransferArtifact(v: unknown): v is RepertoireTransferArtifact {
+  return isObj(v) && typeof v.generatedAt === 'string' && isObj(v.summary) && Array.isArray(v.repertoireBuckets) && Array.isArray(v.openingFamilyScores) && Array.isArray(v.weakestBuckets);
+}
+
+export function isRepertoireTransferCoachingArtifact(v: unknown): v is RepertoireTransferCoachingArtifact {
+  return isObj(v)
+    && typeof v.generatedAt === "string"
+    && Array.isArray(v.entries)
+    && Array.isArray(v.fragileLines)
+    && Array.isArray(v.topActions)
+    && Array.isArray(v.drillVsGameGaps)
+    && Array.isArray(v.conceptReinforcements)
+    && isObj(v.summary);
+}
+
+export function isRepertoireDrillMemoryArtifact(v: unknown): v is RepertoireDrillMemoryArtifact {
+  return isObj(v)
+    && typeof v.generatedAt === "string"
+    && Array.isArray(v.entries)
+    && Array.isArray(v.fragileLines)
+    && Array.isArray(v.strongestLines)
+    && Array.isArray(v.atRiskLines)
+    && Array.isArray(v.drillVsGameComparisons)
+    && isObj(v.summary);
+}
+
+export function isRepertoireDrillQueueArtifact(v: unknown): v is RepertoireDrillQueueArtifact {
+  return isObj(v)
+    && typeof v.generatedAt === "string"
+    && Array.isArray(v.entries)
+    && Array.isArray(v.strongestLines)
+    && Array.isArray(v.nextLinesToReview)
+    && isObj(v.summary);
+}
+
+export function isRepertoireDrillEventArtifactList(v: unknown): v is RepertoireDrillEventArtifact[] {
+  return Array.isArray(v);
+}
+
+export function isRepertoireDrillSessionSummaryArtifactList(v: unknown): v is RepertoireDrillSessionSummaryArtifact[] {
+  return Array.isArray(v);
+}
+
+export function isRepertoireRepairArtifact(v: unknown): v is RepertoireRepairArtifact {
+  return isObj(v)
+    && typeof v.generatedAt === "string"
+    && Array.isArray(v.urgentGames)
+    && Array.isArray(v.repairByType)
+    && Array.isArray(v.conceptLinkedRepairs)
+    && Array.isArray(v.scheduledDrills)
+    && isObj(v.summary);
+}
+
+export function isRepertoireRepairQueueArtifact(v: unknown): v is RepertoireRepairQueueArtifact {
+  return isObj(v)
+    && typeof v.generatedAt === "string"
+    && Array.isArray(v.entries)
+    && Array.isArray(v.topRepairLines)
+    && Array.isArray(v.urgentGames)
+    && isObj(v.summary);
+}
+
+export function isRepertoireRepairOutcomesArtifact(v: unknown): v is RepertoireRepairOutcomesArtifact {
+  return isObj(v)
+    && typeof v.generatedAt === "string"
+    && Array.isArray(v.entries)
+    && Array.isArray(v.recentlyRepairedLines)
+    && Array.isArray(v.repairsThatWorked)
+    && Array.isArray(v.repairsStillFragile)
+    && Array.isArray(v.nextActions)
+    && isObj(v.summary);
+}
+
+const DIAGNOSIS_CATEGORIES = new Set([
+  "opening_memory_failure", "opening_concept_failure", "calculation_failure",
+  "tactical_blunder", "strategic_misjudgment", "time_trouble",
+  "endgame_technique_failure", "practical_collapse",
+]);
+
+export function isGameLossDiagnosis(v: unknown): v is GameLossDiagnosis {
+  return isObj(v)
+    && typeof v.gameId === "string"
+    && typeof v.gameLost === "boolean"
+    && typeof v.primaryCategory === "string"
+    && DIAGNOSIS_CATEGORIES.has(v.primaryCategory as string)
+    && isObj(v.losingMove)
+    && Array.isArray(v.contributingFactors)
+    && typeof v.explanation === "string"
+    && typeof v.diagnosedAt === "string";
+}
 
 
 

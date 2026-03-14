@@ -10,6 +10,16 @@
   loadObjectiveCoaching,
   loadInterventionEffectiveness,
   loadInterventionMemory,
+  loadConceptState,
+  loadOpeningReport,
+  loadRepertoireReview,
+  loadRepertoireTransfer,
+  loadRepertoireTransferCoaching,
+  loadRepertoireDrillMemory,
+  loadRepertoireDrillQueue,
+  loadRepertoireRepair,
+  loadRepertoireRepairQueue,
+  loadRepertoireRepairOutcomes,
 } from "@/lib/artifacts";
 import { PageHeader } from "@/components/layout/page-header";
 import { SectionCard } from "@/components/ui/section-card";
@@ -44,7 +54,7 @@ function themeBadgeVariant(theme: string) {
 }
 
 export default async function CurriculumPage() {
-  const [plan, objective, objectiveProgress, objectiveEscalation, objectivePortfolio, objectiveCoaching, interventionEffectiveness, interventionMemory] = await Promise.all([
+  const [plan, objective, objectiveProgress, objectiveEscalation, objectivePortfolio, objectiveCoaching, interventionEffectiveness, interventionMemory, conceptState, openingReport, repertoireReview, repertoireTransfer, repertoireTransferCoaching, repertoireDrillMemory, repertoireDrillQueue, repertoireRepair, repertoireRepairQueue, repertoireRepairOutcomes] = await Promise.all([
     loadCurriculumPlan(),
     loadTrainingObjective(),
     loadObjectiveProgress(),
@@ -53,6 +63,16 @@ export default async function CurriculumPage() {
     loadObjectiveCoaching(),
     loadInterventionEffectiveness(),
     loadInterventionMemory(),
+    loadConceptState(),
+    loadOpeningReport(),
+    loadRepertoireReview(),
+    loadRepertoireTransfer(),
+    loadRepertoireTransferCoaching(),
+    loadRepertoireDrillMemory(),
+    loadRepertoireDrillQueue(),
+    loadRepertoireRepair(),
+    loadRepertoireRepairQueue(),
+    loadRepertoireRepairOutcomes(),
   ]);
 
   if (!plan) {
@@ -211,6 +231,209 @@ export default async function CurriculumPage() {
         </SectionCard>
       </div>
 
+
+      {openingReport && (
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <SectionCard title="Opening Curriculum Focus" subtitle="Opening families under pressure">
+            <div className="space-y-3">
+              {plan.openingFocuses.slice(0, 4).map((entry) => (
+                <div key={`${entry.openingFamily}-${entry.theme}`} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-text-primary">{entry.openingName}</p>
+                    <Badge variant="warning">{entry.theme.replace(/_/g, " ")}</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">Count {entry.count}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Detected Families" subtitle="Classified opening families">
+            <div className="space-y-3">
+              {openingReport.familySummaries.slice(0, 4).map((entry) => (
+                <div key={entry.openingKey} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <p className="text-sm font-medium text-text-primary">{entry.openingName}</p>
+                  <p className="mt-1 text-xs text-text-muted">{entry.openingTags.join(", ")} · confidence {entry.averageConfidence.toFixed(2)}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+      )}
+      {repertoireReview && (
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <SectionCard title="Repertoire Curriculum Focus" subtitle="Lines to stabilize before broadening scope">
+            <div className="space-y-3">
+              {plan.repertoireFocuses.slice(0, 4).map((entry) => (
+                <div key={`${entry.repertoireKey}-${entry.lineName}`} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                    <Badge variant="warning">Priority {entry.reviewPriority.toFixed(2)}</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">{entry.recommendedAction}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Transfer Metrics" subtitle="How well study is reaching real games">
+            <div className="space-y-3">
+              {repertoireTransfer?.repertoireBuckets.slice(0, 4).map((entry) => (
+                <div key={entry.repertoireKey} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <p className="text-sm font-medium text-text-primary">{entry.repertoireName}</p>
+                  <p className="mt-1 text-xs text-text-muted">Score {entry.score.toFixed(2)} · in-book depth {entry.averageInBookDepth.toFixed(2)} · deviation {(entry.deviationRate * 100).toFixed(0)}%</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+      )}
+      {repertoireTransferCoaching && (
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <SectionCard title="Transfer Repair Plan" subtitle="Fragile lines to stabilize before expansion">
+            <div className="space-y-3">
+              {plan.repertoireTransferFocuses.slice(0, 4).map((entry) => (
+                <div key={`${entry.repertoireKey}-${entry.lineName}`} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                    <Badge variant="warning">Urgency {entry.urgency.toFixed(2)}</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">{entry.recommendedReviewLine}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="First Bad Moments" subtitle="Where the repertoire actually starts to fail">
+            <div className="space-y-3">
+              {repertoireTransferCoaching.fragileLines.slice(0, 4).map((entry) => (
+                <div key={entry.lineId} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                  <p className="mt-1 text-xs text-text-muted">
+                    Ply {entry.firstBadMomentPly ?? "?"}{entry.firstBadMomentMove ? ` with ${entry.firstBadMomentMove}` : ""}: {entry.firstBadMomentReason}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+      )}
+      {repertoireDrillMemory && repertoireDrillQueue && (
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <SectionCard title="Drill Memory Plan" subtitle="Which repertoire lines need spaced review next">
+            <div className="space-y-3">
+              {plan.repertoireDrillFocuses.slice(0, 4).map((entry) => (
+                <div key={entry.lineId} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                    <Badge variant="warning">Urgency {entry.urgency.toFixed(2)}</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">{entry.recommendedAction}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Stable Drill Lines" subtitle="Lines you can safely deprioritize for now">
+            <div className="space-y-3">
+              {repertoireDrillQueue.strongestLines.slice(0, 4).map((entry) => (
+                <div key={entry.lineId} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                  <p className="mt-1 text-xs text-text-muted">Recall confidence {Math.round(entry.recallConfidence * 100)}% · stability {Math.round(entry.stabilityScore * 100)}%</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+      )}
+      {repertoireRepair && repertoireRepairQueue && (
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <SectionCard title="Repair Queue Plan" subtitle="Imported games to convert into exact line repair">
+            <div className="space-y-3">
+              {plan.repertoireRepairFocuses.slice(0, 4).map((entry) => (
+                <div key={`${entry.sourceGameId}-${entry.lineId}`} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                    <Badge variant="warning">{entry.repairType.replace(/_/g, " ")}</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">{entry.scheduledDrillReason}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Games Needing Repair" subtitle="Urgent imported-game failures behind the plan">
+            <div className="space-y-3">
+              {repertoireRepairQueue.urgentGames.slice(0, 4).map((entry) => (
+                <div key={`${entry.sourceGameId}-${entry.lineName}`} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                  <p className="mt-1 text-xs text-text-muted">Game {entry.sourceGameId} · urgency {entry.urgencyScore.toFixed(2)}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+      )}
+      {repertoireRepairOutcomes && (
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <SectionCard title="Repair Outcome Plan" subtitle="Repairs that proved out vs lines still under pressure">
+            <div className="space-y-3">
+              {repertoireRepairOutcomes.nextActions.slice(0, 4).map((entry) => (
+                <div key={entry.repairId} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                    <Badge variant="warning">{entry.outcomeVerdict.replace(/_/g, " ")}</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">{entry.nextAction}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Repairs That Worked" subtitle="Lines that can cool slightly">
+            <div className="space-y-3">
+              {repertoireRepairOutcomes.repairsThatWorked.slice(0, 4).map((entry) => (
+                <div key={entry.repairId} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                  <p className="mt-1 text-xs text-text-muted">{entry.outcomeReason}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+      )}
+      {conceptState && (
+        <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <SectionCard title="Concept Sequence" subtitle="Curriculum concept order">
+            <div className="space-y-3">
+              {plan.conceptSequence.slice(0, 4).map((entry) => (
+                <div key={`${entry.sessionIndex}-${entry.conceptKey}`} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-text-primary">Session {entry.sessionIndex + 1}: {entry.conceptName}</p>
+                    <Badge variant="accent">{entry.conceptKey}</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">{entry.rationale}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Cluster Pressure" subtitle="Concept groups needing reinforcement">
+            <div className="space-y-3">
+              {conceptState.clusterWeaknesses.slice(0, 4).map((cluster) => (
+                <div key={cluster.cluster} className="rounded-lg bg-surface-elevated px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-text-primary">{cluster.cluster}</p>
+                    <Badge variant="warning">Priority {cluster.averageReviewPriority.toFixed(2)}</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">{cluster.concepts.join(", ")}</p>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+      )}
+
       <SectionCard title="Session Roadmap" subtitle={`${plan.sessionCount} planned sessions`}>
         <div className="space-y-3">
           {plan.sessions.map((session) => (
@@ -257,3 +480,15 @@ export default async function CurriculumPage() {
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+

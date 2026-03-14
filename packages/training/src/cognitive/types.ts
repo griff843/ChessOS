@@ -9,6 +9,7 @@ import type { ChessColor } from "@chess-os/chess-core";
 import type { GamePhase } from "@chess-os/classifier";
 import type { LessonCategory, DifficultyEstimate } from "../exercises/types";
 import type { GradingTier } from "../grading/eval-loss-bands";
+import type { ExercisePerspective } from "../perspective/player-perspective";
 
 export type ExerciseType =
   | "tactical"
@@ -115,8 +116,12 @@ export interface ReconstructionGradeResult {
 export interface CognitiveSessionExercise {
   exerciseId: string;
   exerciseType: ExerciseType;
+  gameId?: string;
+  ply?: number;
   fen: string;
   sideToMove: ChessColor;
+  heroColor?: ChessColor | null;
+  perspective?: ExercisePerspective;
   phase: GamePhase;
   lessonCategory: LessonCategory;
   difficultyEstimate: DifficultyEstimate;

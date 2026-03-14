@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { MetricCard } from "@/components/ui/metric-card";
 import { Badge, DifficultyBadge } from "@/components/ui/badge";
 import { formatCategory, formatRelativeDate, formatPercent } from "@/lib/utils";
+import { deriveSessionLabel } from "@/lib/session-label";
 import { Play, CheckCircle, XCircle, BookOpen } from "lucide-react";
 import Link from "next/link";
 
@@ -47,10 +48,10 @@ export default async function SessionDetailPage({
   return (
     <>
       <PageHeader
-        title={sessionId}
+        title={deriveSessionLabel(session)}
         subtitle={`Created ${formatRelativeDate(session.createdAt)}${
           isCompleted ? ` · Completed ${formatRelativeDate(results.completedAt)}` : " · Not yet completed"
-        }`}
+        } · ${session.exerciseCount} exercises`}
         action={
           <Link
             href="/sessions"

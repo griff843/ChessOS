@@ -22,6 +22,16 @@ import type { ImportAnalysisOverview, ImportPipelineStep, ImportResults } from "
 interface ImportAnalyzePanelProps {
   overview: ImportAnalysisOverview;
   results: ImportResults | null;
+  repairQueue: {
+    entries: Array<{
+      sourceGameId: string;
+      lineId: string;
+      lineName: string;
+      repairType: string;
+      urgencyScore: number;
+      scheduledDrillReason: string;
+    }>;
+  } | null;
 }
 
 function formatBytes(bytes: number): string {
@@ -68,7 +78,7 @@ function StepRow({ step }: { step: ImportPipelineStep }) {
   );
 }
 
-export function ImportAnalyzePanel({ overview, results }: ImportAnalyzePanelProps) {
+export function ImportAnalyzePanel({ overview, results, repairQueue }: ImportAnalyzePanelProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -333,6 +343,40 @@ export function ImportAnalyzePanel({ overview, results }: ImportAnalyzePanelProp
               </Link>
             </div>
           </div>
+
+          {repairQueue && (
+            <div className="rounded-2xl border border-border bg-surface p-5">
+              <h3 className="text-sm font-semibold text-text-primary">Games Needing Repair</h3>
+              <p className="mt-2 text-xs leading-relaxed text-text-muted">
+                Deterministic repertoire repair candidates generated from imported games. Hand off directly into a targeted drill.
+              </p>
+              <div className="mt-4 space-y-3">
+                {repairQueue.entries.slice(0, 3).map((entry) => (
+                  <div key={`${entry.sourceGameId}-${entry.lineId}`} className="rounded-xl bg-surface-elevated px-4 py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-medium text-text-primary">{entry.lineName}</p>
+                      <span className="rounded-full bg-warning/10 px-2 py-1 text-[11px] font-semibold text-warning">
+                        {entry.repairType.replace(/_/g, " ")}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-text-muted">Source game {entry.sourceGameId} · urgency {entry.urgencyScore.toFixed(2)}</p>
+                    <p className="mt-1 text-xs text-text-muted">{entry.scheduledDrillReason}</p>
+                    <Link
+                      href={`/repertoire?preferredLineId=${encodeURIComponent(entry.lineId)}`}
+                      className="mt-3 inline-flex items-center gap-2 rounded-xl border border-accent/30 bg-accent-muted px-3 py-2 text-xs font-medium text-accent transition-colors hover:bg-accent-muted/80"
+                    >
+                      Start repair drill
+                    </Link>
+                  </div>
+                ))}
+                {repairQueue.entries.length === 0 && (
+                  <div className="rounded-xl bg-surface-elevated px-4 py-3 text-xs text-text-muted">
+                    No urgent import-to-repair lines yet. Once a seeded repertoire line fails in real games, it will surface here.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="rounded-2xl border border-border bg-surface p-5">
             <h3 className="text-sm font-semibold text-text-primary">Artifacts produced</h3>

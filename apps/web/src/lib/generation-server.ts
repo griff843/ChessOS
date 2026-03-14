@@ -8,9 +8,14 @@ import type {
   CognitiveSessionExercise,
   StudySession,
   ObjectiveProgressState,
+  RepertoireDrillEvent,
+  RepertoireDrillSessionSummary,
+  RepertoireRepairOutcomeEntry,
 } from "@chess-os/training";
+import { deriveExercisePerspective } from "@chess-os/training";
 import { ROOT, OUT } from "./paths";
 import { safeParseJsonl } from "./safe-parse";
+import { loadHeroColorByGameId } from "./player-perspective";
 
 export { ROOT, OUT };
 
@@ -21,7 +26,17 @@ export async function loadExerciseCorpusRaw(): Promise<TrainingExercise[]> {
   if (skipped > 0) {
     console.warn(`[chess-os] Skipped ${skipped} bad lines in training-exercises.jsonl`);
   }
-  return rows;
+  const heroColorByGameId = await loadHeroColorByGameId();
+  return rows.map((row) => {
+    const heroColor = row.heroColor ?? heroColorByGameId.get(row.gameId) ?? null;
+    const perspective =
+      row.perspective ?? deriveExercisePerspective({ mover: row.sideToMove, heroColor });
+    return {
+      ...row,
+      heroColor,
+      perspective,
+    };
+  });
 }
 
 export async function loadProgressStoreRaw(): Promise<ProgressStore | null> {
@@ -102,6 +117,37 @@ export async function loadAnalyticsMap(): Promise<Record<string, SessionAnalytic
     return Object.keys(map).length > 0 ? map : null;
   } catch {
     return null;
+  }
+}
+
+export async function loadRepertoireDrillEventsRaw(): Promise<RepertoireDrillEvent[]> {
+  try {
+    const path = join(OUT, "repertoire", "repertoire-drill-events.jsonl");
+    const raw = await readFile(path, "utf-8");
+    const { rows } = safeParseJsonl<RepertoireDrillEvent>(raw, path);
+    return rows;
+  } catch {
+    return [];
+  }
+}
+
+export async function loadRepertoireDrillSessionsRaw(): Promise<RepertoireDrillSessionSummary[]> {
+  try {
+    const raw = await readFile(join(OUT, "repertoire", "repertoire-drill-sessions.json"), "utf-8");
+    return JSON.parse(raw) as RepertoireDrillSessionSummary[];
+  } catch {
+    return [];
+  }
+}
+
+export async function loadRepertoireRepairOutcomesRaw(): Promise<RepertoireRepairOutcomeEntry[]> {
+  try {
+    const path = join(OUT, "repertoire", "repertoire-repair-history.jsonl");
+    const raw = await readFile(path, "utf-8");
+    const { rows } = safeParseJsonl<RepertoireRepairOutcomeEntry>(raw, path);
+    return rows;
+  } catch {
+    return [];
   }
 }
 

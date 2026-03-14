@@ -12,17 +12,34 @@ export function formatConceptGraphMd(graph: ConceptGraph): string {
     lines.push("");
     for (const key of summary.concepts) {
       const concept = graph.conceptIndex[key];
-      lines.push(`- ${concept.conceptName} (
-${concept.conceptKey})`);
+      lines.push(`### ${concept.conceptName}`);
+      lines.push(`- Key: ${concept.conceptKey}`);
+      lines.push(`- Difficulty: ${concept.difficultyBand}`);
+      lines.push(`- Description: ${concept.description}`);
       if (concept.prerequisiteConcepts.length > 0) {
-        lines.push(`  prerequisites: ${concept.prerequisiteConcepts.join(", ")}`);
+        lines.push(`- Prerequisites: ${concept.prerequisiteConcepts.join(", ")}`);
       }
       if (concept.relatedConcepts.length > 0) {
-        lines.push(`  related: ${concept.relatedConcepts.join(", ")}`);
+        lines.push(`- Related: ${concept.relatedConcepts.join(", ")}`);
       }
+      if (concept.childConcepts.length > 0) {
+        lines.push(`- Children: ${concept.childConcepts.join(", ")}`);
+      }
+      lines.push(`- Training Tags: ${concept.trainingTags.join(", ")}`);
+      lines.push(`- Source Themes: ${concept.sourceThemes.join(", ")}`);
+      if (concept.sourceLessonCategories.length > 0) {
+        lines.push(`- Lesson Categories: ${concept.sourceLessonCategories.join(", ")}`);
+      }
+      if (concept.sourceReasonCodes.length > 0) {
+        lines.push(`- Reason Codes: ${concept.sourceReasonCodes.join(", ")}`);
+      }
+      if (concept.sourceOpeningThemes.length > 0) {
+        lines.push(`- Opening Themes: ${concept.sourceOpeningThemes.join(", ")}`);
+      }
+      lines.push("");
     }
-    lines.push("");
   }
 
   return lines.join("\n");
 }
+

@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const E2E_PORT = Number(process.env.CHESS_OS_E2E_PORT ?? "3401");
+const E2E_BASE_URL = `http://localhost:${E2E_PORT}`;
+
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
@@ -10,7 +13,7 @@ export default defineConfig({
   timeout: 30_000,
 
   use: {
-    baseURL: "http://localhost:3001",
+    baseURL: E2E_BASE_URL,
     trace: "on-first-retry",
   },
 
@@ -22,9 +25,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "cd apps/web && npx next dev --webpack -p 3001",
-    url: "http://localhost:3001",
-    reuseExistingServer: !process.env.CI,
+    command: "node scripts/dev-web-e2e.mjs",
+    url: E2E_BASE_URL,
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 });

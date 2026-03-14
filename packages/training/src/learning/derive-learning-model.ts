@@ -131,7 +131,7 @@ export function deriveLearningModel(args: {
 
   for (const record of args.history.filter((entry) => entry.completedAt && entry.results)) {
     for (const [category, count] of Object.entries(record.categoryDistribution)) {
-      const concept = args.conceptGraph.concepts.find((entry) => entry.lessonCategories.includes(category as never));
+      const concept = args.conceptGraph.concepts.find((entry) => entry.sourceLessonCategories.includes(category as never));
       if (!concept || count <= 0) continue;
       const acc = touch(concept.conceptKey);
       acc.exposureCount += count;
@@ -270,3 +270,5 @@ export function buildLearningPriorityLookup(
 
   return boosts;
 }
+
+

@@ -1,6 +1,8 @@
 import type { EvaluatedPosition } from "@chess-os/engine";
 import type { FeatureVector, MistakeClassification } from "@chess-os/classifier";
+import type { ChessColor } from "@chess-os/chess-core";
 import type { TrainingDatasetRow } from "./types";
+import { deriveExercisePerspective } from "../perspective/player-perspective";
 
 /**
  * Build a single training dataset row from aligned pipeline outputs.
@@ -12,7 +14,8 @@ import type { TrainingDatasetRow } from "./types";
 export function buildDatasetRow(
   positionBefore: EvaluatedPosition,
   feature: FeatureVector,
-  classification: MistakeClassification
+  classification: MistakeClassification,
+  heroColor: ChessColor | null = null
 ): TrainingDatasetRow {
   return {
     gameId: positionBefore.gameId,
@@ -20,6 +23,8 @@ export function buildDatasetRow(
     ply: classification.ply,
     fen: positionBefore.fen,
     mover: positionBefore.sideToMove,
+    heroColor,
+    perspective: deriveExercisePerspective({ mover: positionBefore.sideToMove, heroColor }),
     moveSan: classification.moveSan,
 
     evalCp: positionBefore.evalCp,

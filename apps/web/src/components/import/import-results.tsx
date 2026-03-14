@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronRight, Loader2, Sparkles, Swords, Trophy } from "lucide-react";
@@ -157,6 +158,11 @@ function ExpandedGameDetails({ game }: { game: ImportGameResult }) {
 
   return (
     <div className="border-t border-border-subtle bg-surface-elevated/40 px-4 py-4">
+      <div className="mb-3 flex justify-end">
+        <Link href={`/games/${game.gameId}`} className="text-xs text-accent hover:underline">
+          View full diagnosis
+        </Link>
+      </div>
       <div className="grid grid-cols-[0.6fr_0.8fr_0.9fr_1.2fr_0.8fr] gap-3 text-[11px] font-semibold uppercase tracking-wide text-text-muted">
         <p>Move</p>
         <p>Evaluation</p>

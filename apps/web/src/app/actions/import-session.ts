@@ -15,6 +15,7 @@ import {
   prioritizeByProgress,
   refreshDueStatus,
   serializeProgressStore,
+  type SessionPerspective,
   type ProgressStore,
 } from "@chess-os/training";
 import type { TrainingExercise, StudySession, SessionConfig } from "@chess-os/training";
@@ -66,8 +67,23 @@ function buildImportSessionArtifact(
   };
 }
 
+function filterExercisesForPerspective(
+  exercises: TrainingExercise[],
+  perspective: SessionPerspective
+) {
+  if (perspective === "both") return exercises;
+  const exact = exercises.filter((exercise) => exercise.perspective === perspective);
+  if (exact.length > 0) return exact;
+  if (perspective === "hero") {
+    const fallback = exercises.filter((exercise) => exercise.perspective !== "opponent");
+    if (fallback.length > 0) return fallback;
+  }
+  return [];
+}
+
 export async function generateImportSession(
-  preset: ImportSessionPreset
+  preset: ImportSessionPreset,
+  perspective: SessionPerspective = "hero"
 ): Promise<GenerateImportSessionResult> {
   if (launching) {
     return {
@@ -93,9 +109,10 @@ export async function generateImportSession(
     }
 
     const categories = importPresetCategories(preset);
+    const perspectiveExercises = filterExercisesForPerspective(exercises, perspective);
     const filtered = categories
-      ? exercises.filter((exercise) => categories.includes(exercise.explanation.lessonCategory))
-      : exercises;
+      ? perspectiveExercises.filter((exercise) => categories.includes(exercise.explanation.lessonCategory))
+      : perspectiveExercises;
 
     if (filtered.length === 0) {
       return {
@@ -108,13 +125,13 @@ export async function generateImportSession(
     }
 
     const calibration = computeDifficultyCalibration(
-      exercises.map((exercise) => exercise.explanation.difficultyScore)
+      perspectiveExercises.map((exercise) => exercise.explanation.difficultyScore)
     );
 
     const existing = await loadProgressStoreRaw();
     let store: ProgressStore = existing
-      ? mergeProgressStore(existing, exercises, calibration)
-      : initProgressStore(exercises, calibration);
+      ? mergeProgressStore(existing, perspectiveExercises, calibration)
+      : initProgressStore(perspectiveExercises, calibration);
 
     const now = new Date().toISOString();
     refreshDueStatus(store, now);
@@ -126,7 +143,7 @@ export async function generateImportSession(
       sessionSize,
     };
 
-    const { session } = buildStudySession(prioritized, calibration, config);
+    const { session } = buildStudySession(prioritized, calibration, config, { selectedPerspective: perspective });
     session.metadata.exerciseTypeMix = undefined;
 
     const sourceGames = [...new Set(session.exercises.map((exercise) => exercise.gameId))];

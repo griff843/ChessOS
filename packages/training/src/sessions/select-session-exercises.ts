@@ -92,6 +92,8 @@ function pickFromPool(
       ply: ex.ply,
       fen: ex.fen,
       sideToMove: ex.sideToMove,
+      heroColor: ex.heroColor,
+      perspective: ex.perspective,
       phase: ex.phase,
       playedMoveSan: ex.playedMoveSan,
       bestMoveSan: ex.engineAnswer.bestMoveSan,

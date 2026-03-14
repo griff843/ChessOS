@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useCallback, useEffect, useTransition } from "react";
+import { useState, useCallback, useEffect, useRef, useTransition } from "react";
 import { StudyBoard } from "./study-board";
 import { ExerciseInfo } from "./exercise-info";
 import { CognitiveExerciseInfo } from "./cognitive-exercise-info";
@@ -31,6 +31,11 @@ import type {
   SessionAttemptSummary,
   StudyPhase,
 } from "@/lib/study-types";
+import {
+  saveCheckpoint,
+  loadCheckpoint,
+  clearCheckpoint,
+} from "@/lib/session-checkpoint";
 import Link from "next/link";
 import { Loader2, ArrowLeft, RotateCcw } from "lucide-react";
 
@@ -57,13 +62,52 @@ type RawAttempt = {
   timestamp: string;
 };
 
+function rebuildResults(
+  rawAttempts: RawAttempt[],
+  exerciseCount: number
+): Array<GradeResult["attempt"]> {
+  const results: Array<GradeResult["attempt"]> = new Array(exerciseCount).fill(null);
+  for (const attempt of rawAttempts) {
+    if (attempt.exerciseIndex >= 0 && attempt.exerciseIndex < exerciseCount) {
+      results[attempt.exerciseIndex] = {
+        exerciseId: attempt.exerciseId,
+        exerciseIndex: attempt.exerciseIndex,
+        userMove: attempt.userMove,
+        userMoveUci: attempt.userMoveUci,
+        engineMove: attempt.engineMove,
+        engineMoveUci: attempt.engineMoveUci,
+        isCorrect: attempt.isCorrect,
+        gradingTier: attempt.gradingTier,
+        evalLossCp: attempt.evalLossCp,
+      };
+    }
+  }
+  return results;
+}
+
 export function StudyPlayer({ sessionId, exercises }: StudyPlayerProps) {
+  // Restore checkpoint on initial mount
+  const restored = useRef(() => {
+    const cp = loadCheckpoint(sessionId);
+    if (cp && cp.currentIndex < exercises.length && cp.rawAttempts.length > 0) {
+      return cp;
+    }
+    return null;
+  });
+  const checkpoint = restored.current();
+
   const [phase, setPhase] = useState<StudyPhase>("playing");
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [results, setResults] = useState<Array<GradeResult["attempt"]>>(
-    new Array(exercises.length).fill(null)
+  const [currentIndex, setCurrentIndex] = useState(
+    checkpoint ? checkpoint.currentIndex : 0
   );
-  const [rawAttempts, setRawAttempts] = useState<RawAttempt[]>([]);
+  const [results, setResults] = useState<Array<GradeResult["attempt"]>>(
+    checkpoint
+      ? rebuildResults(checkpoint.rawAttempts, exercises.length)
+      : new Array(exercises.length).fill(null)
+  );
+  const [rawAttempts, setRawAttempts] = useState<RawAttempt[]>(
+    checkpoint ? checkpoint.rawAttempts : []
+  );
   const [currentFeedback, setCurrentFeedback] = useState<GradeResult | null>(
     null
   );
@@ -90,12 +134,26 @@ export function StudyPlayer({ sessionId, exercises }: StudyPlayerProps) {
   const [invalidError, setInvalidError] = useState<string | null>(null);
   const [completionResult, setCompletionResult] =
     useState<CompletionResult | null>(null);
-  const [startedAt] = useState(() => new Date().toISOString());
+  const [startedAt] = useState(
+    () => checkpoint?.startedAt ?? new Date().toISOString()
+  );
   const [isPending, startTransition] = useTransition();
   const [highlightSquares, setHighlightSquares] = useState<{
     from?: string;
     to?: string;
   }>({});
+
+  // Save checkpoint after each exercise grading
+  useEffect(() => {
+    if (rawAttempts.length > 0 && phase !== "completed") {
+      saveCheckpoint({
+        sessionId,
+        startedAt,
+        currentIndex,
+        rawAttempts,
+      });
+    }
+  }, [rawAttempts, sessionId, startedAt, currentIndex, phase]);
 
   const currentExercise = exercises[currentIndex];
   const isMixedSession = exercises.some((e) => e.exerciseType !== "tactical");
@@ -125,6 +183,7 @@ export function StudyPlayer({ sessionId, exercises }: StudyPlayerProps) {
   );
 
   const resetSessionState = useCallback(() => {
+    clearCheckpoint(sessionId);
     setCurrentIndex(0);
     setPhase("playing");
     setResults(new Array(exercises.length).fill(null));
@@ -136,7 +195,7 @@ export function StudyPlayer({ sessionId, exercises }: StudyPlayerProps) {
     setInvalidError(null);
     setHighlightSquares({});
     setCompletionResult(null);
-  }, [exercises.length]);
+  }, [exercises.length, sessionId]);
 
   const handleMove = useCallback(
     (moveInput: string) => {
@@ -370,6 +429,7 @@ export function StudyPlayer({ sessionId, exercises }: StudyPlayerProps) {
       setPhase("loading");
       startTransition(async () => {
         const result = await completeSession(sessionId, rawAttempts, startedAt);
+        clearCheckpoint(sessionId);
         setCompletionResult(result);
         setPhase("completed");
       });

@@ -8,6 +8,7 @@ import type {
   StudySession,
   DifficultyCalibration,
   SessionConfig,
+  SessionExercise,
 } from "../sessions/types";
 import { DEFAULT_SESSION_CONFIG } from "../sessions/types";
 import { selectSessionExercises } from "../sessions/select-session-exercises";
@@ -65,7 +66,8 @@ export function buildMixedSession(
   exercises: TrainingExercise[],
   calibration: DifficultyCalibration,
   sessionConfig: SessionConfig = DEFAULT_SESSION_CONFIG,
-  typeMix: ExerciseTypeMix = DEFAULT_EXERCISE_TYPE_MIX
+  typeMix: ExerciseTypeMix = DEFAULT_EXERCISE_TYPE_MIX,
+  metadata: { selectedPerspective?: import("../perspective/player-perspective").SessionPerspective } = {}
 ): {
   session: StudySession;
   cognitiveExercises: CognitiveSessionExercise[];
@@ -129,8 +131,12 @@ export function buildMixedSession(
     reconstructionExercises.push({
       exerciseId: ex.positionId,
       exerciseType: "reconstruction",
+      gameId: ex.gameId,
+      ply: ex.ply,
       fen: ex.fen,
       sideToMove: ex.sideToMove,
+      heroColor: ex.heroColor,
+      perspective: ex.perspective,
       phase: ex.phase,
       lessonCategory: ex.explanation.lessonCategory,
       difficultyEstimate: ex.explanation.difficultyEstimate,
@@ -207,14 +213,16 @@ export function buildMixedSession(
     ...reconstructionExercises,
   ];
 
-  const sessionExercises = [
+  const sessionExercises: SessionExercise[] = [
     ...tacticalSelected.map((ex) => ({ ...ex, exerciseType: "tactical" as const })),
     ...recallExercises.map((ex) => ({
       exerciseId: ex.exerciseId,
-      gameId: "",
-      ply: 0,
+      gameId: ex.gameId ?? "",
+      ply: ex.ply ?? 0,
       fen: ex.fen,
       sideToMove: ex.sideToMove,
+      heroColor: ex.heroColor ?? null,
+      perspective: ex.perspective ?? "unknown",
       phase: ex.phase,
       playedMoveSan: "",
       bestMoveSan: undefined as string | undefined,
@@ -227,10 +235,12 @@ export function buildMixedSession(
     })),
     ...vizExercises.map((ex) => ({
       exerciseId: ex.exerciseId,
-      gameId: "",
-      ply: 0,
+      gameId: ex.gameId ?? "",
+      ply: ex.ply ?? 0,
       fen: ex.fen,
       sideToMove: ex.sideToMove,
+      heroColor: ex.heroColor ?? null,
+      perspective: ex.perspective ?? "unknown",
       phase: ex.phase,
       playedMoveSan: "",
       bestMoveSan: undefined as string | undefined,
@@ -243,10 +253,12 @@ export function buildMixedSession(
     })),
     ...reconstructionExercises.map((ex) => ({
       exerciseId: ex.exerciseId,
-      gameId: "",
-      ply: 0,
+      gameId: ex.gameId ?? "",
+      ply: ex.ply ?? 0,
       fen: ex.fen,
       sideToMove: ex.sideToMove,
+      heroColor: ex.heroColor ?? null,
+      perspective: ex.perspective ?? "unknown",
       phase: ex.phase,
       playedMoveSan: ex.reconstructionData?.gameMoveSan ?? "",
       bestMoveSan: ex.reconstructionData?.engineMoveSan,
@@ -291,6 +303,7 @@ export function buildMixedSession(
       difficultyDistribution,
       categoryDistribution,
       sourceGames: [...sourceGames].sort(),
+      selectedPerspective: metadata.selectedPerspective,
       exerciseTypeMix: typeMixActual,
     },
   };

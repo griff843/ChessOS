@@ -8,6 +8,7 @@
 import type { ChessColor } from "@chess-os/chess-core";
 import type { GamePhase, MistakeLabel } from "@chess-os/classifier";
 import type { CriticalityFactors } from "../intelligence/types";
+import type { ExercisePerspective } from "../perspective/player-perspective";
 
 /**
  * Target type taxonomy.
@@ -38,6 +39,8 @@ export interface TrainingTarget {
   ply: number;
   moveSan: string;
   mover: ChessColor;
+  heroColor: ChessColor | null;
+  perspective: ExercisePerspective;
   fen: string;
   evalCp: number;
   phase: GamePhase;
