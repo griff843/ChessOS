@@ -1,4 +1,4 @@
-import { readFile, readdir } from "fs/promises";
+import { readFile, readdir, stat } from "fs/promises";
 import { basename, extname, join } from "path";
 import type { ChessColor } from "@chess-os/chess-core";
 import { inferHeroColorForGame } from "@chess-os/training";
@@ -131,7 +131,7 @@ export async function loadGameContext(gameId: string): Promise<GameContext> {
       break;
     }
   } catch {
-    // PGN directory missing — fall back to gameId-only context
+    // PGN directory missing -- fall back to gameId-only context
   }
 
   // Load row count from training dataset
@@ -145,4 +145,66 @@ export async function loadGameContext(gameId: string): Promise<GameContext> {
   }
 
   return ctx;
+}
+
+export interface GameSummary extends GameContext {
+  hasDiagnosis: boolean;
+  sortKey: string; // ISO date or gameId for stable sort
+}
+
+export async function loadAllGamesSummary(): Promise<GameSummary[]> {
+  const gamesDir = join(OUT, "games");
+  let gameIds: string[] = [];
+
+  try {
+    const entries = await readdir(gamesDir, { withFileTypes: true });
+    gameIds = entries
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      // Only include games that have a training dataset (i.e., were analyzed)
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+
+  // Filter to only analyzed games (have training-dataset.json)
+  const analyzed: string[] = [];
+  await Promise.all(
+    gameIds.map(async (id) => {
+      try {
+        await stat(join(gamesDir, id, "training-dataset.json"));
+        analyzed.push(id);
+      } catch {
+        // skip
+      }
+    })
+  );
+
+  const summaries = await Promise.all(
+    analyzed.map(async (gameId): Promise<GameSummary> => {
+      const ctx = await loadGameContext(gameId);
+      let hasDiagnosis = false;
+      try {
+        await stat(join(gamesDir, gameId, "diagnosis.json"));
+        hasDiagnosis = true;
+      } catch {
+        // no diagnosis yet
+      }
+      // Build a sort key: prefer ISO date from PGN, fallback to gameId
+      let sortKey = gameId;
+      if (ctx.date) {
+        // ctx.date is formatted "Mar 11, 2026" -- convert back for sorting
+        try {
+          sortKey = new Date(ctx.date).toISOString();
+        } catch {
+          sortKey = gameId;
+        }
+      }
+      return { ...ctx, hasDiagnosis, sortKey };
+    })
+  );
+
+  // Sort newest first
+  summaries.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+  return summaries;
 }

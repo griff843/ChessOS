@@ -16,6 +16,7 @@ import {
   Plus,
   RefreshCw,
   Loader2,
+  Swords,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,9 +33,11 @@ interface Command {
 const commands: Command[] = [
   // Navigate
   { id: "dashboard", label: "Dashboard", group: "Navigate", icon: <LayoutDashboard className="h-4 w-4" />, href: "/", keywords: ["home", "overview"] },
+  { id: "games", label: "Games", group: "Navigate", icon: <Swords className="h-4 w-4" />, href: "/games", keywords: ["library", "review", "game", "diagnosis"] },
   { id: "coach", label: "Coach", group: "Navigate", icon: <GraduationCap className="h-4 w-4" />, href: "/coach", keywords: ["advice", "plan"] },
   { id: "review", label: "Review Queue", group: "Navigate", icon: <ListChecks className="h-4 w-4" />, href: "/review", keywords: ["due", "overdue", "queue"] },
-  { id: "curriculum", label: "Curriculum", group: "Navigate", icon: <BookOpen className="h-4 w-4" />, href: "/curriculum", keywords: ["roadmap", "plan"] },
+  { id: "repertoire", label: "Repertoire", group: "Navigate", icon: <BookOpen className="h-4 w-4" />, href: "/repertoire", keywords: ["openings", "lines", "drill"] },
+  { id: "curriculum", label: "Curriculum", group: "Navigate", icon: <Layers className="h-4 w-4" />, href: "/curriculum", keywords: ["roadmap", "plan"] },
   { id: "sessions", label: "Sessions", group: "Navigate", icon: <Layers className="h-4 w-4" />, href: "/sessions", keywords: ["study", "browse"] },
   { id: "history", label: "History", group: "Navigate", icon: <Clock className="h-4 w-4" />, href: "/history", keywords: ["completed", "past"] },
   { id: "settings", label: "Settings", group: "Navigate", icon: <Settings className="h-4 w-4" />, href: "/settings", keywords: ["config", "artifacts"] },

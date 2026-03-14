@@ -14,13 +14,17 @@ import {
   Crown,
   Search,
   Upload,
+  Swords,
+  BookOpen,
 } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/import", label: "Import & Analyze", icon: Upload },
+  { href: "/games", label: "Games", icon: Swords },
   { href: "/coach", label: "Coach", icon: GraduationCap },
   { href: "/review", label: "Review Queue", icon: RefreshCw },
+  { href: "/repertoire", label: "Repertoire", icon: BookOpen },
   { href: "/curriculum", label: "Curriculum", icon: Map },
   { href: "/sessions", label: "Sessions", icon: Play },
   { href: "/history", label: "History", icon: Clock },
@@ -70,7 +74,7 @@ export function Sidebar() {
           </kbd>
         </button>
         <p className="px-3 text-[10px] font-medium uppercase tracking-widest text-text-muted">
-          Local · Deterministic · Private
+          Local | Deterministic | Private
         </p>
       </div>
     </aside>

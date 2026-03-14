@@ -12,7 +12,7 @@ import {
   CATEGORY_TO_TARGET,
 } from "@chess-os/training";
 import type { DiagnosisHistoryEntry } from "@/lib/types";
-import { FileCode2, ArrowLeft } from "lucide-react";
+import { FileCode2, ArrowLeft, LayoutList } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -87,8 +87,8 @@ export default async function GameDetailPage({
   }
 
   const subtitle = contextParts.length > 0
-    ? contextParts.join(" · ")
-    : `${gameId} · ${ctx.rowCount} positions`;
+    ? contextParts.join(" | ")
+    : `${gameId} | ${ctx.rowCount} positions`;
 
   return (
     <>
@@ -130,11 +130,11 @@ export default async function GameDetailPage({
           )}
         </div>
         <Link
-          href="/import"
+          href="/games"
           className="flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary transition-colors"
         >
-          <ArrowLeft className="h-3 w-3" />
-          Import
+          <LayoutList className="h-3 w-3" />
+          All Games
         </Link>
       </div>
 
