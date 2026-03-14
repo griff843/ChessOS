@@ -1,7 +1,6 @@
-﻿// Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
 // Chess-OS Artifact Types
 // Mirrors canonical schemas from training pipeline
-// Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+
 
 export type LessonCategory =
   | "tactical_miss"
@@ -17,7 +16,7 @@ export type MasteryState = "unseen" | "learning" | "unstable" | "improving" | "m
 export type GradingTier = "exact" | "acceptable" | "inaccuracy" | "mistake" | "blunder" | "illegal";
 export type TrendDirection = "improving" | "worsening" | "stable" | "insufficient_data";
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Dashboard Ã¢â€â‚¬Ã¢â€â‚¬
+// Dashboard
 
 export interface SessionSnapshot {
   sessionId: string;
@@ -123,7 +122,7 @@ export interface ReviewReport {
   entries: ReviewReportEntry[];
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Coach Ã¢â€â‚¬Ã¢â€â‚¬
+// Coach
 
 export interface CoachInsight {
   type: "strength" | "weakness" | "trend" | "review" | "milestone";
@@ -198,7 +197,7 @@ export interface MistakePatterns {
   recurringWeaknesses: string[];
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Review Queue Ã¢â€â‚¬Ã¢â€â‚¬
+// Review Queue
 
 export interface ReviewQueueEntry {
   exerciseId: string;
@@ -217,7 +216,7 @@ export interface ReviewQueue {
   entries: ReviewQueueEntry[];
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Curriculum Ã¢â€â‚¬Ã¢â€â‚¬
+// Curriculum
 
 export interface CurriculumSession {
   sessionIndex: number;
@@ -272,7 +271,7 @@ export interface CurriculumPlan {
   overallRationale: string;
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Sessions Ã¢â€â‚¬Ã¢â€â‚¬
+// Sessions
 
 export interface SessionExercise {
   exerciseId: string;
@@ -361,7 +360,7 @@ export interface SessionResults {
   };
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Session History Ã¢â€â‚¬Ã¢â€â‚¬
+// Session History
 
 export interface SessionHistoryEntry {
   sessionId: string;
@@ -373,7 +372,7 @@ export interface SessionHistoryEntry {
   results: Array<{ exerciseId: string; result: "correct" | "incorrect" }>;
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Progress Ã¢â€â‚¬Ã¢â€â‚¬
+// Progress
 
 export interface ExerciseProgressEntry {
   exerciseId: string;
@@ -404,7 +403,7 @@ export interface ExerciseProgress {
   lastUpdatedAt: string;
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Cognitive Training Ã¢â€â‚¬Ã¢â€â‚¬
+// Cognitive Training
 
 export type ExerciseType = "tactical" | "recall" | "visualization" | "reconstruction";
 
@@ -436,7 +435,7 @@ export interface PatternLibrary {
   totalPatternedExercises: number;
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Strategic Intelligence Ã¢â€â‚¬Ã¢â€â‚¬
+// Strategic Intelligence
 
 export type ReadinessState = "ready_to_expand" | "hold_steady" | "repair_mode";
 
@@ -1775,7 +1774,7 @@ export interface RepertoireRepairOutcomesArtifact {
   };
 }
 
-// ── Game Loss Diagnosis ─────────────────────────────────────────────
+// â”€â”€ Game Loss Diagnosis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type DiagnosisCategory =
   | "opening_memory_failure"
@@ -1822,7 +1821,7 @@ export interface GameLossDiagnosis {
   diagnosedAt: string;
 }
 
-// ── Repair Targets ──────────────────────────────────────────────────
+// â”€â”€ Repair Targets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type RepairTarget =
   | "opening_line_recall"
@@ -1851,7 +1850,7 @@ export interface RepairTargetRecommendation {
   generatedAt: string;
 }
 
-// ── Repair Evidence ─────────────────────────────────────────────────
+// â”€â”€ Repair Evidence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type EvidenceStatus =
   | "isolated"
@@ -1876,7 +1875,7 @@ export interface RepairEvidence {
   explanation: string;
 }
 
-// ── Repertoire Branch Repair ─────────────────────────────────────────
+// â”€â”€ Repertoire Branch Repair â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type BranchRepairConfidence = "high" | "medium" | "low";
 export type BranchRepairMode = "line_recall" | "concept_review" | "family_study";

@@ -1,4 +1,4 @@
-﻿import { test, expect } from "../fixtures";
+import { test, expect } from "../fixtures";
 
 test.describe("Route smoke tests", () => {
   const routes = [
@@ -40,7 +40,7 @@ test.describe("Route smoke tests", () => {
   test("/nonexistent returns 404 with custom page", async ({ page }) => {
     const res = await page.goto("/nonexistent");
     expect(res?.status()).toBe(404);
-    await expect(page.locator("text=404 â€” Not found")).toBeVisible();
+    await expect(page.locator("text=/404.*Not found/")).toBeVisible();
   });
 
   test("session detail page loads for existing session", async ({ page }) => {
