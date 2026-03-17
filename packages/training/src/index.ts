@@ -91,6 +91,7 @@ export * from "./coach/types";
 export * from "./coach/build-mistake-patterns";
 export * from "./coach/build-study-plan";
 export * from "./coach/build-coaching-summary";
+export * from "./coach/build-coach-overview";
 export * from "./coach/format-mistake-patterns-md";
 export * from "./coach/format-study-plan-md";
 export * from "./coach/format-coaching-summary-md";
@@ -185,5 +186,9 @@ export * from './repair/types';
 export * from './repair/generate-repair-targets';
 export * from './repair/evaluate-repair-evidence';
 export * from './repair/build-repertoire-branch-repair';
-
+export * from './repair/build-review-session-request';
+export * from './repair/repair-target-matching';
+export * from './repair/evaluate-coaching-memory';
+export * from './repair/evaluate-target-accuracy';
+export * from './repair/build-coaching-memory-summary';
 

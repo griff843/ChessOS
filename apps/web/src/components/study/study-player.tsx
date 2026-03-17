@@ -492,7 +492,7 @@ export function StudyPlayer({ sessionId, exercises }: StudyPlayerProps) {
             className="flex items-center gap-1.5 text-xs text-text-muted transition-colors hover:text-text-primary"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Sessions
+            All Sessions
           </Link>
           <button
             onClick={resetSessionState}
@@ -557,7 +557,7 @@ export function StudyPlayer({ sessionId, exercises }: StudyPlayerProps) {
             className="flex items-center gap-1.5 text-xs text-text-muted transition-colors hover:text-text-primary"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Sessions
+            All Sessions
           </Link>
           <button
             onClick={resetSessionState}
@@ -634,6 +634,7 @@ export function StudyPlayer({ sessionId, exercises }: StudyPlayerProps) {
           <StudyBoard
             fen={currentExercise.fen}
             sideToMove={currentExercise.sideToMove}
+            heroColor={currentExercise.heroColor}
             onMove={handleMove}
             disabled={phase !== "playing" || isPending}
             highlightSquares={highlightSquares}

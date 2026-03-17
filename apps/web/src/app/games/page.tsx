@@ -8,7 +8,15 @@ import { Swords, CheckCircle, Circle, ArrowRight } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function GamesPage() {
-  const games = await loadAllGamesSummary();
+  const allGames = await loadAllGamesSummary();
+  // Filter out legacy demo games that have no real metadata
+  const games = allGames.filter((g) => {
+    if (g.gameId === "demo-game-001") return false;
+    // Also filter games where all metadata is missing (no players, no opening, no date)
+    const hasMetadata = g.white || g.black || g.opening || g.eco || g.date;
+    const isLegacyPlaceholder = !hasMetadata && g.gameId.startsWith("demo-");
+    return !isLegacyPlaceholder;
+  });
 
   if (games.length === 0) {
     return (
@@ -39,7 +47,7 @@ export default async function GamesPage() {
     <>
       <PageHeader
         title="Games"
-        subtitle={`${games.length} analyzed game${games.length === 1 ? "" : "s"}`}
+        subtitle={`${games.length} analyzed game${games.length === 1 ? "" : "s"}${allGames.length > games.length ? ` (${allGames.length - games.length} hidden)` : ""}`}
         action={
           <Link
             href="/import"

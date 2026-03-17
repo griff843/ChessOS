@@ -69,6 +69,7 @@ export default async function HistoryPage() {
         <MetricCard
           label="Average Accuracy"
           value={formatPercent(report.summary.averageAccuracy)}
+          subtitle={report.summary.averageAccuracy === 0 ? "Complete exercises to track accuracy" : undefined}
           icon={<BarChart3 className="h-4 w-4" />}
         />
         <MetricCard

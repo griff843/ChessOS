@@ -252,3 +252,44 @@ export interface CoachingSummary {
   } | null;
 }
 
+// ── Coach Overview (M011) ─────────────────────────────────────────────
+
+import type { RepairTarget, CoachingPersistenceState } from "../repair/types.js";
+
+export type CoachOverviewReadiness =
+  | "repair"
+  | "consolidate"
+  | "expand"
+  | "insufficient_data";
+
+export type CoachNextActionType =
+  | "drill_opening"
+  | "start_session"
+  | "monitor";
+
+export interface CoachNextAction {
+  type: CoachNextActionType;
+  label: string;
+  href: string;
+}
+
+export interface CoachOverviewFocus {
+  target: RepairTarget;
+  persistenceState: CoachingPersistenceState;
+  gamesAffected: number;
+}
+
+export interface CoachOverviewOpening {
+  lineId: string;
+  lineName: string;
+  urgency: string;
+}
+
+export interface CoachOverview {
+  readiness: CoachOverviewReadiness;
+  primaryFocus: CoachOverviewFocus | null;
+  openingPriority: CoachOverviewOpening | null;
+  improvingAreas: string[];
+  nextAction: CoachNextAction;
+  summary: string | null;
+}

@@ -1774,7 +1774,7 @@ export interface RepertoireRepairOutcomesArtifact {
   };
 }
 
-// â”€â”€ Game Loss Diagnosis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Game Loss Diagnosis â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 export type DiagnosisCategory =
   | "opening_memory_failure"
@@ -1821,7 +1821,7 @@ export interface GameLossDiagnosis {
   diagnosedAt: string;
 }
 
-// â”€â”€ Repair Targets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Repair Targets â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 export type RepairTarget =
   | "opening_line_recall"
@@ -1850,7 +1850,7 @@ export interface RepairTargetRecommendation {
   generatedAt: string;
 }
 
-// â”€â”€ Repair Evidence â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Repair Evidence â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 export type EvidenceStatus =
   | "isolated"
@@ -1875,7 +1875,109 @@ export interface RepairEvidence {
   explanation: string;
 }
 
-// â”€â”€ Repertoire Branch Repair â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Review Session Request ──────────────────────────────────────────
+
+export type ReviewWeightingStrength = "strong" | "moderate" | "weak" | "none";
+
+export interface ReviewSessionRequest {
+  sourceGameId: string;
+  primaryTarget: RepairTarget;
+  secondaryTargets: RepairTarget[];
+  evidenceStatus: EvidenceStatus | null;
+  branchRepairMatched: boolean;
+  targetBoostStrength: ReviewWeightingStrength;
+  coachingEmphasis?: CoachingEmphasis | null;
+}
+
+// ── Coaching Memory ─────────────────────────────────────────────────
+
+export type CoachingPersistenceState =
+  | "first_occurrence"
+  | "emerging"
+  | "recurring_no_training"
+  | "improving_after_training"
+  | "persistent_despite_training"
+  | "recurring_limited_data";
+
+export type CoachingEmphasis = "increase" | "maintain" | "reduce" | "monitor";
+
+export interface TargetedSessionSummary {
+  sessionId: string;
+  createdAt: string;
+  primaryTarget: string;
+  boostStrength: string;
+}
+
+// ── Target Accuracy (M008) ───────────────────────────────────────────
+
+export type SessionPerformanceBand =
+  | "strong"
+  | "mixed"
+  | "weak"
+  | "insufficient_data";
+
+export interface TargetAccuracySummary {
+  sessionId: string;
+  target: RepairTarget;
+  matchedExerciseCount: number;
+  totalExerciseCount: number;
+  correctCount: number;
+  accuracyRate: number | null;
+  performanceBand: SessionPerformanceBand;
+  explanation: string;
+}
+
+export interface CoachingMemory {
+  target: RepairTarget;
+  gameId: string;
+  persistenceState: CoachingPersistenceState;
+  evidence: RepairEvidence;
+  targetedSessionCount: number;
+  mostRecentTargetedSessionAt: string | null;
+  gamesAfterTraining: number;
+  recurrencesAfterTraining: number;
+  confidence: "high" | "moderate" | "low";
+  explanation: string;
+  recommendedEmphasis: CoachingEmphasis;
+  sessionPerformanceBand?: SessionPerformanceBand;
+  sessionPerformanceNote?: string;
+}
+
+// ── Coaching Memory Summary (M009) ───────────────────────────────────────────
+
+export type MemorySummaryReadiness = "ready" | "sparse" | "no_data";
+
+export interface CoachingMemoryEntry {
+  target: RepairTarget;
+  persistenceState: CoachingPersistenceState;
+  confidence: "high" | "moderate" | "low";
+  recommendedEmphasis: CoachingEmphasis;
+  totalOccurrences: number;
+  targetedSessionCount: number;
+  explanation: string;
+  priorityScore: number;
+}
+
+export interface CoachingMemorySummary {
+  generatedAt: string;
+  readiness: MemorySummaryReadiness;
+  totalGamesAnalyzed: number;
+  totalTargetsTracked: number;
+  persistent: CoachingMemoryEntry[];
+  improving: CoachingMemoryEntry[];
+  recurringNoTraining: CoachingMemoryEntry[];
+  limitedData: CoachingMemoryEntry[];
+  emerging: CoachingMemoryEntry[];
+  persistentCount: number;
+  improvingCount: number;
+  recurringNoTrainingCount: number;
+  limitedDataCount: number;
+  emergingCount: number;
+  topPriorities: CoachingMemoryEntry[];
+  summaryMessage: string;
+}
+
+// â"€â"€ Repertoire Branch Repair â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 export type BranchRepairConfidence = "high" | "medium" | "low";
 export type BranchRepairMode = "line_recall" | "concept_review" | "family_study";

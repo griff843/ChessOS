@@ -56,6 +56,8 @@ export interface EnrichedExercise {
   ply: number;
   fen: string;
   sideToMove: ChessColor;
+  /** The player's color — used for board orientation. Null for legacy exercises. */
+  heroColor: ChessColor | null;
   phase: string;
   playedMoveSan: string;
   bestMoveSan: string | undefined;

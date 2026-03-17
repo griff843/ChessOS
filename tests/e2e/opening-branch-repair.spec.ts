@@ -150,11 +150,12 @@ test.describe("M004 Opening Branch Repair", () => {
       await expect(badge).toBeVisible({ timeout: 5_000 });
     });
 
-    test("branch repair shows Drill this line link to /repertoire", async ({ page }) => {
+    test("branch repair shows Drill This Line button linking to /repertoire", async ({ page }) => {
       await page.goto(`/games/${TEST_GAME_ID}`);
       await expect(page.locator("h1")).toHaveText("Game Review", { timeout: 10_000 });
 
-      const drillLink = page.getByText("Drill this line");
+      // M010: CTA is now a button-styled link with capitalised label
+      const drillLink = page.getByText("Drill This Line");
       await expect(drillLink).toBeVisible({ timeout: 5_000 });
 
       const href = await drillLink.getAttribute("href");
@@ -194,11 +195,12 @@ test.describe("M004 Opening Branch Repair", () => {
       await expect(branchLabel).toBeVisible({ timeout: 5_000 });
     });
 
-    test("concept failure shows 'Review the concepts' repair mode", async ({ page }) => {
+    test("concept failure shows 'Review in Repertoire' repair mode CTA", async ({ page }) => {
       await page.goto(`/games/${TEST_GAME_ID}`);
       await expect(page.locator("h1")).toHaveText("Game Review", { timeout: 10_000 });
 
-      await expect(page.getByText("Review the concepts")).toBeVisible({ timeout: 5_000 });
+      // M010: CTA label changed from "Review the concepts" → "Review in Repertoire"
+      await expect(page.getByText("Review in Repertoire")).toBeVisible({ timeout: 5_000 });
 
       await page.screenshot({
         path: join(SCREENSHOT_DIR, "m004-02-opening-concept-failure.png"),
@@ -253,7 +255,7 @@ test.describe("M004 Opening Branch Repair", () => {
       await expect(page.getByText("No Branch Match")).toBeVisible({ timeout: 5_000 });
 
       // No drill link (no matched line)
-      await expect(page.getByText("Drill this line")).not.toBeVisible();
+      await expect(page.getByText("Drill This Line")).not.toBeVisible();
 
       await page.screenshot({
         path: join(SCREENSHOT_DIR, "m004-04-graceful-fallback.png"),

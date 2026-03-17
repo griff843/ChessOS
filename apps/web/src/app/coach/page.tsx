@@ -22,6 +22,8 @@
   loadRepertoireRepair,
   loadRepertoireRepairQueue,
   loadRepertoireRepairOutcomes,
+  loadAllGameDiagnoses,
+  loadTargetedSessionSummaries,
 } from "@/lib/artifacts";
 import { PageHeader } from "@/components/layout/page-header";
 import { SectionCard } from "@/components/ui/section-card";
@@ -30,14 +32,50 @@ import { InsightList } from "@/components/ui/insight-list";
 import { RefreshInsightsButton } from "@/components/ui/refresh-insights-button";
 import { Badge, DifficultyBadge, TrendBadge } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { CoachingMemorySection } from "@/components/coach/coaching-memory-section";
+import { CoachOverviewPanel } from "@/components/coach/coach-overview-panel";
 import { formatCategory, formatRelativeDate } from "@/lib/utils";
+
+const INTERNAL_ID_LABELS: Record<string, string> = {
+  endgame_technique: "Endgame Technique",
+  tactical_pattern_recognition: "Tactical Pattern Recognition",
+  tactical_awareness: "Tactical Awareness",
+  king_safety: "King Safety",
+  material_loss: "Material Loss",
+  back_rank: "Back Rank",
+  opening_theory: "Opening Theory",
+  calculation: "Calculation",
+  positional_play: "Positional Play",
+};
+
+function humanizeId(id: string): string {
+  return INTERNAL_ID_LABELS[id] ?? id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function humanizeObjectiveText(text: string): string {
+  // First scrub known phrase-level jargon
+  let result = text
+    .replace(/Escalation verdict is none/gi, "Hold current objective")
+    .replace(/intervention memory score/gi, "momentum score")
+    .replace(/blocked-gate pressure/gi, "curriculum pressure")
+    .replace(/recurrence pressure/gi, "pattern recurrence")
+    .replace(/review burden impact/gi, "review load")
+    .replace(/Last trained at never/gi, "Not yet trained");
+  // Then scrub any remaining snake_case internal IDs found in stored artifact text
+  for (const [id, label] of Object.entries(INTERNAL_ID_LABELS)) {
+    result = result.replace(new RegExp(`\\b${id}\\b`, "g"), label);
+  }
+  return result;
+}
 import Link from "next/link";
 import { GraduationCap, AlertTriangle, Clock, ArrowRight } from "lucide-react";
+import { buildCoachingMemorySummary, buildCoachOverview, CATEGORY_TO_TARGET } from "@chess-os/training";
+import type { DiagnosisHistoryEntry } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function CoachPage() {
-  const [summary, plan, patterns, objective, objectiveProgress, objectiveEscalation, objectivePortfolio, objectiveCoaching, interventionEffectiveness, interventionMemory, conceptState, openingReport, repertoireReview, repertoireTransfer, repertoireTransferCoaching, repertoireDrillMemory, repertoireDrillQueue, repertoireRepair, repertoireRepairQueue, repertoireRepairOutcomes] = await Promise.all([
+  const [summary, plan, patterns, objective, objectiveProgress, objectiveEscalation, objectivePortfolio, objectiveCoaching, interventionEffectiveness, interventionMemory, conceptState, openingReport, repertoireReview, repertoireTransfer, repertoireTransferCoaching, repertoireDrillMemory, repertoireDrillQueue, repertoireRepair, repertoireRepairQueue, repertoireRepairOutcomes, allDiagnoses, targetedSessions] = await Promise.all([
     loadCoachingSummary(),
     loadStudyPlan(),
     loadMistakePatterns(),
@@ -58,7 +96,24 @@ export default async function CoachPage() {
     loadRepertoireRepair(),
     loadRepertoireRepairQueue(),
     loadRepertoireRepairOutcomes(),
+    loadAllGameDiagnoses(),
+    loadTargetedSessionSummaries(),
   ]);
+
+  // Build cross-game coaching memory summary (M009)
+  const diagnosisHistory: DiagnosisHistoryEntry[] = allDiagnoses
+    .filter((d) => d.gameLost && d.primaryCategory in CATEGORY_TO_TARGET)
+    .map((d) => ({
+      gameId: d.gameId,
+      primaryTarget: CATEGORY_TO_TARGET[d.primaryCategory as keyof typeof CATEGORY_TO_TARGET],
+      diagnosedAt: d.diagnosedAt,
+    }));
+  const memorySummary = buildCoachingMemorySummary(
+    diagnosisHistory,
+    targetedSessions,
+    allDiagnoses.length
+  );
+  const overview = buildCoachOverview(memorySummary, repertoireRepairQueue, summary);
 
   if (!summary) {
     const [progress, corpusReady] = await Promise.all([
@@ -114,16 +169,22 @@ export default async function CoachPage() {
       <PageHeader title="Coach" subtitle={`Updated ${formatRelativeDate(summary.generatedAt)}`} />
 
       <div className="mb-6 rounded-xl border border-accent/20 bg-accent-muted px-6 py-5">
-        <p className="text-lg font-semibold text-text-primary">{summary.headline}</p>
-        <p className="mt-2 text-sm leading-relaxed text-text-secondary">{summary.progressStatement}</p>
-        <p className="mt-1 text-sm text-accent">{summary.nextStepStatement}</p>
+        <p className="text-lg font-semibold text-text-primary">{humanizeObjectiveText(summary.headline)}</p>
+        <p className="mt-2 text-sm leading-relaxed text-text-secondary">{humanizeObjectiveText(summary.progressStatement)}</p>
+        <p className="mt-1 text-sm text-accent">{humanizeObjectiveText(summary.nextStepStatement)}</p>
+      </div>
+
+      <CoachOverviewPanel overview={overview} />
+
+      <div className="mb-6">
+        <CoachingMemorySection summary={memorySummary} />
       </div>
 
       {objective && (
         <div className="mb-6 rounded-xl border border-border bg-surface px-6 py-5">
           <p className="text-xs font-medium uppercase tracking-wide text-accent">Training Objective</p>
-          <p className="mt-1 text-sm font-semibold text-text-primary">{objective.currentObjective.replace(/_/g, " ")}</p>
-          <p className="mt-1 text-xs text-text-secondary">{objective.objectiveReason}</p>
+          <p className="mt-1 text-sm font-semibold text-text-primary">{humanizeId(objective.currentObjective)}</p>
+          <p className="mt-1 text-xs text-text-secondary">{humanizeObjectiveText(objective.objectiveReason)}</p>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <div className="rounded-lg bg-surface-elevated px-3 py-2">
               <p className="text-xs font-medium text-text-primary">This Week Plan</p>
@@ -171,20 +232,20 @@ export default async function CoachPage() {
                 <div className="mt-3 rounded-lg bg-surface-elevated px-3 py-3">
                   <p className="text-xs font-medium text-text-primary">Objective Escalation</p>
                   <p className="mt-1 text-[11px] text-text-muted">Escalation Verdict: {objectiveEscalation.escalationVerdict.replace(/_/g, " ")} - {objectiveEscalation.escalationStrength}</p>
-                  <p className="mt-1 text-[11px] text-text-muted">Why the verdict happened: {objectiveEscalation.escalationReason}</p>
-                  <p className="mt-1 text-[11px] text-text-muted">Next Action Recommendation: {objectiveEscalation.explanation}</p>
+                  <p className="mt-1 text-[11px] text-text-muted">Why the verdict happened: {humanizeObjectiveText(objectiveEscalation.escalationReason)}</p>
+                  <p className="mt-1 text-[11px] text-text-muted">Next Action Recommendation: {humanizeObjectiveText(objectiveEscalation.explanation)}</p>
                   {objectiveEscalation.recommendedObjectivePhaseChange && (
                     <p className="mt-1 text-[11px] text-text-muted">Phase-change rationale: {objectiveEscalation.recommendedObjectivePhaseChange.reason}</p>
                   )}
                   {objectiveEscalation.recommendedNextObjective && (
-                    <p className="mt-1 text-[11px] text-text-muted">Switch rationale: {objectiveEscalation.recommendedNextObjective.replace(/_/g, " ")}</p>
+                    <p className="mt-1 text-[11px] text-text-muted">Switch rationale: {humanizeId(objectiveEscalation.recommendedNextObjective)}</p>
                   )}
                 </div>
               )}
               {objectiveCoaching && (
                 <div className="mt-3 rounded-lg bg-surface-elevated px-3 py-3">
                   <p className="text-xs font-medium text-text-primary">Intervention Reason</p>
-                  <p className="mt-1 text-[11px] text-text-muted">{objectiveCoaching.explanation}</p>
+                  <p className="mt-1 text-[11px] text-text-muted">{humanizeObjectiveText(objectiveCoaching.explanation)}</p>
                   {objectiveCoaching.compareWindows[0] && (
                     <p className="mt-1 text-[11px] text-text-muted">Compare Window: {objectiveCoaching.compareWindows[0].summary}</p>
                   )}
@@ -205,10 +266,10 @@ export default async function CoachPage() {
               {objectivePortfolio && (
                 <div className="mt-3 rounded-lg bg-surface-elevated px-3 py-3">
                   <p className="text-xs font-medium text-text-primary">Objective Portfolio</p>
-                  <p className="mt-1 text-[11px] text-text-muted">Active objective: {objectivePortfolio.activeObjective.replace(/_/g, " ")}</p>
+                  <p className="mt-1 text-[11px] text-text-muted">Active objective: {humanizeId(objectivePortfolio.activeObjective)}</p>
                   {objectivePortfolio.rotationDecisions.slice(0, 3).map((decision) => (
                     <p key={decision.objectiveKey} className="mt-1 text-[11px] text-text-muted">
-                      Rotation Decision: {decision.objectiveKey.replace(/_/g, " ")} - {decision.action.replace(/_/g, " ")} - share {decision.trainingShare.toFixed(2)}
+                      Rotation Decision: {humanizeId(decision.objectiveKey)} - {decision.action.replace(/_/g, " ")} - share {decision.trainingShare.toFixed(2)}
                     </p>
                   ))}
                 </div>

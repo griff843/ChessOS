@@ -78,6 +78,7 @@ export async function loadSessionData(
         exerciseId: ex.exerciseId,
         fen: ex.fen,
         sideToMove: ex.sideToMove,
+        heroColor: ex.heroColor ?? null,
         phase: ex.phase,
         lessonCategory: ex.lessonCategory,
         difficultyEstimate: ex.difficultyEstimate,

@@ -1,4 +1,4 @@
-import { existsSync } from "fs";
+import { existsSync, readdirSync } from "fs";
 import { execSync } from "child_process";
 import { resolve, dirname } from "path";
 
@@ -51,6 +51,18 @@ export function findStockfish(): string {
   for (const name of localNames) {
     const candidate = resolve(root, "data", "stockfish", name);
     if (existsSync(candidate)) return candidate;
+  }
+
+  // 3b. Scan data/stockfish/ for any executable (e.g. stockfish-windows-x86-64-avx2.exe)
+  const sfDir = resolve(root, "data", "stockfish");
+  if (existsSync(sfDir)) {
+    const entries = readdirSync(sfDir);
+    const isExe = (f: string) =>
+      process.platform === "win32"
+        ? f.endsWith(".exe")
+        : !f.includes(".") && !f.startsWith(".");
+    const match = entries.find(isExe);
+    if (match) return resolve(sfDir, match);
   }
 
   // 4. Fail closed

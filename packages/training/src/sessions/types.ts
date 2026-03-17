@@ -109,6 +109,14 @@ export interface StudySession {
     interventionRecommendedType?: import("../objectives/types").ObjectiveInterventionType | null;
     interventionRepeatedPatternFlag?: boolean;
     interventionCompareSummary?: string;
+    reviewTargeting?: {
+      sourceGameId: string;
+      primaryTarget: string;
+      secondaryTargets: string[];
+      boostStrength: string;
+      evidenceStatus: string | null;
+      coachingEmphasis?: string | null;
+    };
   };
 }
 

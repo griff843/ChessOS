@@ -54,6 +54,7 @@ interface TrainingExerciseRaw {
   ply: number;
   fen: string;
   sideToMove: string;
+  heroColor?: string | null;
   phase: string;
   playedMoveSan: string;
   engineAnswer: {

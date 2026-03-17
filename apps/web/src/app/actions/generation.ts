@@ -95,6 +95,7 @@ import {
 import type {
   ObjectiveSessionEvidence,
   ProgressStore,
+  ReviewSessionRequest,
   SessionAnalytics,
   SessionConfig,
   SessionPerspective,
@@ -638,7 +639,8 @@ async function buildObjectiveLifecycleBundle(args: {
 }
 
 export async function generateNewSession(
-  perspective: SessionPerspective = "hero"
+  perspective: SessionPerspective = "hero",
+  reviewRequest?: ReviewSessionRequest | null
 ): Promise<GenerateSessionResult> {
   if (generating) {
     return {
@@ -740,7 +742,8 @@ export async function generateNewSession(
       store,
       weights,
       lifecycle.patternIntelligence,
-      intelligence.learningPriority
+      intelligence.learningPriority,
+      reviewRequest ?? null
     );
     const objectiveRanked = rankExercisesForObjective({
       exercises: prioritized,
@@ -813,6 +816,17 @@ export async function generateNewSession(
     session.metadata.interventionRecommendedType = lifecycle.interventionEffectiveness.recommendedNextIntervention;
     session.metadata.interventionRepeatedPatternFlag = lifecycle.interventionEffectiveness.repeatedPatternFlag;
     session.metadata.interventionCompareSummary = lifecycle.interventionEffectiveness.compareWindows[0]?.summary;
+
+    if (reviewRequest && reviewRequest.targetBoostStrength !== "none") {
+      session.metadata.reviewTargeting = {
+        sourceGameId: reviewRequest.sourceGameId,
+        primaryTarget: reviewRequest.primaryTarget,
+        secondaryTargets: reviewRequest.secondaryTargets,
+        boostStrength: reviewRequest.targetBoostStrength,
+        evidenceStatus: reviewRequest.evidenceStatus,
+        coachingEmphasis: reviewRequest.coachingEmphasis ?? null,
+      };
+    }
 
     markExercisesSeen(
       store,

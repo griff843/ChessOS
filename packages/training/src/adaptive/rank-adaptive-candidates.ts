@@ -7,7 +7,7 @@
  *   1. due_for_review -> sorted by targetPriority descending (unchanged)
  *   2. All others     -> sorted by progress tier, then adaptiveScore descending
  *
- * adaptiveScore = targetPriority * combinedWeight + unstableBoost + recurrenceBoost + learningBoost
+ * adaptiveScore = targetPriority * combinedWeight + unstableBoost + recurrenceBoost + learningBoost + repairTargetBoost
  *
  * combinedWeight = (categoryWeight + difficultyWeight) / 2
  *   - categoryWeight   = profile.byCategory[lessonCategory].adaptiveWeight  (default 1.0)
@@ -27,6 +27,8 @@ import type { TrainingExercise } from "../exercises/types";
 import type { ProgressStore, ExerciseStatus } from "../progress/types";
 import type { AdaptiveWeights } from "./types";
 import type { PatternIntelligence } from "../strategic/types";
+import type { ReviewSessionRequest } from "../repair/types";
+import { computeRepairTargetBoost } from "../repair/repair-target-matching";
 
 /**
  * Map exercise status to a selection tier.
@@ -79,6 +81,7 @@ function getCombinedWeight(
  * @param weights              Adaptive weights extracted from the weakness profile
  * @param patternIntelligence  Optional pattern intelligence for recurrence boost
  * @param learningPriority     Optional learning-model boost keyed by positionId
+ * @param reviewRequest        Optional review session request for repair-target boost
  * @returns Exercises re-ordered for adaptive session selection
  */
 export function rankAdaptiveCandidates(
@@ -86,7 +89,8 @@ export function rankAdaptiveCandidates(
   store: ProgressStore,
   weights: AdaptiveWeights,
   patternIntelligence?: PatternIntelligence,
-  learningPriority?: Map<string, number>
+  learningPriority?: Map<string, number>,
+  reviewRequest?: ReviewSessionRequest | null
 ): TrainingExercise[] {
   let recurrenceMap: Map<string, number> | undefined;
   if (patternIntelligence) {
@@ -127,16 +131,27 @@ export function rankAdaptiveCandidates(
     const learningBoostA = learningPriority?.get(a.positionId) ?? 0;
     const learningBoostB = learningPriority?.get(b.positionId) ?? 0;
 
+    const repairBoostA = computeRepairTargetBoost(
+      { lessonCategory: a.explanation.lessonCategory, phase: a.phase },
+      reviewRequest
+    );
+    const repairBoostB = computeRepairTargetBoost(
+      { lessonCategory: b.explanation.lessonCategory, phase: b.phase },
+      reviewRequest
+    );
+
     const scoreA =
       a.targetPriority * getCombinedWeight(a, weights) +
       unstableBoostA +
       recurrenceBoostA +
-      learningBoostA;
+      learningBoostA +
+      repairBoostA;
     const scoreB =
       b.targetPriority * getCombinedWeight(b, weights) +
       unstableBoostB +
       recurrenceBoostB +
-      learningBoostB;
+      learningBoostB +
+      repairBoostB;
 
     return scoreB - scoreA;
   });

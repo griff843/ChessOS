@@ -41,14 +41,6 @@ export default async function StudyPage({
       <PageHeader
         title="Study Session"
         subtitle={`${sessionId} · ${exercises.length} exercises`}
-        action={
-          <Link
-            href="/sessions"
-            className="text-xs text-text-secondary hover:text-text-primary"
-          >
-            ← All sessions
-          </Link>
-        }
       />
       <StudyPlayer sessionId={sessionId} exercises={exercises} />
     </>

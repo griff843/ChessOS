@@ -13,6 +13,9 @@ import type {
   RepairEvidence,
   EvidenceStatus,
   RepertoireBranchRepair,
+  CoachingMemory,
+  CoachingPersistenceState,
+  SessionPerformanceBand,
 } from "@/lib/types";
 import { OpeningBranchRepair } from "@/components/review/opening-branch-repair";
 import {
@@ -94,6 +97,42 @@ const STATUS_VARIANT: Record<
   persistent: "danger",
 };
 
+const PERFORMANCE_BAND_LABELS: Partial<Record<SessionPerformanceBand, string>> = {
+  strong: "Practice: Strong",
+  mixed: "Practice: Mixed",
+  weak: "Practice: Weak",
+};
+
+const PERFORMANCE_BAND_VARIANT: Partial<Record<
+  SessionPerformanceBand,
+  "success" | "warning" | "danger"
+>> = {
+  strong: "success",
+  mixed: "warning",
+  weak: "danger",
+};
+
+const PERSISTENCE_LABELS: Record<CoachingPersistenceState, string> = {
+  first_occurrence: "First Occurrence",
+  emerging: "Emerging Pattern",
+  recurring_no_training: "Recurring — No Training Yet",
+  improving_after_training: "Improving After Training",
+  persistent_despite_training: "Persistent Despite Training",
+  recurring_limited_data: "Needs More Data",
+};
+
+const PERSISTENCE_VARIANT: Record<
+  CoachingPersistenceState,
+  "info" | "warning" | "danger" | "success" | "accent"
+> = {
+  first_occurrence: "info",
+  emerging: "warning",
+  recurring_no_training: "danger",
+  improving_after_training: "success",
+  persistent_despite_training: "danger",
+  recurring_limited_data: "warning",
+};
+
 // ── Helpers ─────────────────────────────────────────────────────────
 
 function MoveNotation({
@@ -132,6 +171,9 @@ interface CoachingReviewProps {
   evidence: RepairEvidence | null;
   heroColor: "white" | "black" | null;
   branchRepair?: RepertoireBranchRepair | null;
+  coachingMemory?: CoachingMemory | null;
+  /** Ply → FEN map for rendering contributing factor mini-boards. */
+  plyFenMap?: Record<number, string>;
 }
 
 export function CoachingReview({
@@ -140,6 +182,8 @@ export function CoachingReview({
   evidence,
   heroColor,
   branchRepair,
+  coachingMemory,
+  plyFenMap,
 }: CoachingReviewProps) {
   // Non-loss game — clean, neutral summary
   if (!diagnosis.gameLost) {
@@ -257,8 +301,34 @@ export function CoachingReview({
             )}
           </p>
 
-          {/* Evidence inline */}
-          {evidence && (
+          {/* Coaching memory or evidence inline */}
+          {coachingMemory ? (
+            <div className="mt-3 flex flex-col gap-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={PERSISTENCE_VARIANT[coachingMemory.persistenceState]}>
+                  {PERSISTENCE_LABELS[coachingMemory.persistenceState]}
+                </Badge>
+                {coachingMemory.sessionPerformanceBand &&
+                  coachingMemory.sessionPerformanceBand !== "insufficient_data" && (
+                  <Badge
+                    variant={
+                      PERFORMANCE_BAND_VARIANT[coachingMemory.sessionPerformanceBand]
+                    }
+                  >
+                    {PERFORMANCE_BAND_LABELS[coachingMemory.sessionPerformanceBand]}
+                  </Badge>
+                )}
+                <span className="text-xs text-text-muted">
+                  {coachingMemory.explanation}
+                </span>
+              </div>
+              {coachingMemory.targetedSessionCount > 0 && (
+                <span className="text-xs text-text-muted">
+                  {coachingMemory.targetedSessionCount} targeted session{coachingMemory.targetedSessionCount === 1 ? "" : "s"} launched
+                </span>
+              )}
+            </div>
+          ) : evidence ? (
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Badge variant={STATUS_VARIANT[evidence.status]}>
                 {STATUS_LABELS[evidence.status]}
@@ -269,12 +339,19 @@ export function CoachingReview({
                   : evidence.explanation}
               </span>
             </div>
-          )}
+          ) : null}
 
           {/* CTA — prominent, right after narrative */}
           {recommendation.repairNeeded && (
             <div className="mt-5">
-              <ReviewCTA />
+              <ReviewCTA
+                sourceGameId={diagnosis.gameId}
+                primaryTarget={recommendation.primaryTarget}
+                secondaryTargets={recommendation.secondaryTargets.map((s) => s.target)}
+                evidenceStatus={evidence?.status ?? null}
+                branchRepairMatched={branchRepair?.matched ?? false}
+                coachingEmphasis={coachingMemory?.recommendedEmphasis}
+              />
             </div>
           )}
 
@@ -293,26 +370,40 @@ export function CoachingReview({
           {contributingFactors.length > 0 && (
             <div className="space-y-1.5">
               {contributingFactors.map(
-                (factor: ContributingFactor, i: number) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between gap-2 rounded-lg bg-surface-elevated px-3 py-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <MoveNotation
-                        ply={factor.ply}
-                        moveSan={factor.moveSan}
-                        swingCp={factor.swingCp}
-                      />
-                      <Badge variant={CATEGORY_VARIANT[factor.category]}>
-                        {CATEGORY_LABELS[factor.category]}
-                      </Badge>
+                (factor: ContributingFactor, i: number) => {
+                  const factorFen = plyFenMap?.[factor.ply];
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 rounded-lg bg-surface-elevated px-3 py-2"
+                    >
+                      {factorFen && (
+                        <div className="shrink-0">
+                          <StaticBoard
+                            fen={factorFen}
+                            orientation={boardOrientation}
+                            size={100}
+                          />
+                        </div>
+                      )}
+                      <div className="flex flex-1 flex-col gap-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <MoveNotation
+                            ply={factor.ply}
+                            moveSan={factor.moveSan}
+                            swingCp={factor.swingCp}
+                          />
+                          <Badge variant={CATEGORY_VARIANT[factor.category]}>
+                            {CATEGORY_LABELS[factor.category]}
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-text-muted">
+                          {factor.note}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-xs text-text-muted">
-                      {factor.note}
-                    </span>
-                  </div>
-                )
+                  );
+                }
               )}
             </div>
           )}

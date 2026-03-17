@@ -30,6 +30,22 @@ import Link from "next/link";
 import { Map, CheckCircle, XCircle, ArrowRight, BookOpen } from "lucide-react";
 import { cn, formatCategory, formatRelativeDate } from "@/lib/utils";
 
+const INTERNAL_ID_LABELS: Record<string, string> = {
+  endgame_technique: "Endgame Technique",
+  tactical_pattern_recognition: "Tactical Pattern Recognition",
+  tactical_awareness: "Tactical Awareness",
+  king_safety: "King Safety",
+  material_loss: "Material Loss",
+  back_rank: "Back Rank",
+  opening_theory: "Opening Theory",
+  calculation: "Calculation",
+  positional_play: "Positional Play",
+};
+
+function humanizeId(id: string): string {
+  return INTERNAL_ID_LABELS[id] ?? id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export const dynamic = "force-dynamic";
 
 function themeLabel(theme: string): string {
@@ -134,7 +150,7 @@ export default async function CurriculumPage() {
         <div className="mb-6 rounded-xl border border-accent/20 bg-accent-muted px-6 py-4">
           <p className="text-xs font-medium uppercase tracking-wide text-accent">Objective Progression</p>
           <p className="mt-1 text-sm font-semibold text-text-primary">
-            {objective.currentObjective.replace(/_/g, " ")} - {objective.objectivePhase}
+            {humanizeId(objective.currentObjective)} - {objective.objectivePhase}
           </p>
           <p className="mt-1 text-xs text-text-secondary">{objective.objectiveExerciseMixRationale}</p>
           <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-text-muted">

@@ -9,6 +9,8 @@ import { RotateCcw } from "lucide-react";
 interface StudyBoardProps {
   fen: string;
   sideToMove: "white" | "black";
+  /** Player's color — sets default board orientation. Falls back to sideToMove. */
+  heroColor?: "white" | "black" | null;
   onMove: (move: string) => void;
   disabled?: boolean;
   highlightSquares?: { from?: string; to?: string };
@@ -18,6 +20,7 @@ interface StudyBoardProps {
 export function StudyBoard({
   fen,
   sideToMove,
+  heroColor,
   onMove,
   disabled = false,
   highlightSquares,
@@ -120,9 +123,10 @@ export function StudyBoard({
     [disabled, onMove]
   );
 
+  const defaultOrientation = heroColor ?? sideToMove;
   const options: ChessboardOptions = {
     position: fen,
-    boardOrientation: flipped ? (sideToMove === "white" ? "black" : "white") : sideToMove,
+    boardOrientation: flipped ? (defaultOrientation === "white" ? "black" : "white") : defaultOrientation,
     animationDurationInMs: 200,
     allowDragging: !disabled,
     boardStyle: {

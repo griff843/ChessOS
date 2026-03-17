@@ -21,16 +21,19 @@ import {
   X,
 } from "lucide-react";
 
-const navItems = [
+const primaryNavItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/import", label: "Import & Analyze", icon: Upload },
   { href: "/games", label: "Games", icon: Swords },
   { href: "/coach", label: "Coach", icon: GraduationCap },
-  { href: "/review", label: "Review", icon: RefreshCw },
   { href: "/repertoire", label: "Repertoire", icon: BookOpen },
+  { href: "/history", label: "History", icon: Clock },
+];
+
+const secondaryNavItems = [
+  { href: "/import", label: "Import & Analyze", icon: Upload },
   { href: "/curriculum", label: "Curriculum", icon: Map },
   { href: "/sessions", label: "Sessions", icon: Play },
-  { href: "/history", label: "History", icon: Clock },
+  { href: "/review", label: "Review", icon: RefreshCw },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -95,25 +98,48 @@ export function Sidebar() {
           </button>
         </div>
 
-        <nav className="flex-1 space-y-0.5 px-3 py-4">
-          {navItems.map((item) => {
-            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-accent-muted text-accent"
-                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          <div className="space-y-0.5">
+            {primaryNavItems.map((item) => {
+              const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-accent-muted text-accent"
+                      : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+          <div className="my-3 border-t border-border-subtle" />
+          <div className="space-y-0.5">
+            {secondaryNavItems.map((item) => {
+              const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-accent-muted text-accent"
+                      : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
         <div className="space-y-2 border-t border-border px-3 py-3">
@@ -127,8 +153,11 @@ export function Sidebar() {
               Ctrl+K
             </kbd>
           </button>
-          <p className="px-3 text-[10px] font-medium uppercase tracking-widest text-text-muted">
+          <p className="px-3 text-[10px] font-medium uppercase tracking-widest text-text-muted hidden sm:block">
             Local | Deterministic | Private
+          </p>
+          <p className="px-3 text-[10px] font-medium uppercase tracking-widest text-text-muted sm:hidden">
+            Local | Private
           </p>
         </div>
       </aside>

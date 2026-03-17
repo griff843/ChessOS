@@ -16,7 +16,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background antialiased">
         <Sidebar />
         <CommandPalette />
-        <main className="min-h-screen px-4 py-6 lg:ml-56 lg:px-8">{children}</main>
+        <main className="min-h-screen py-6 pl-14 pr-4 lg:ml-56 lg:px-8">{children}</main>
       </body>
     </html>
   );

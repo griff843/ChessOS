@@ -84,12 +84,25 @@ export function generateTrainingTargets(topN = parseInt(process.env.TOP_N ?? "10
   let totalTargets = 0;
   const typeCounts = new Map<string, number>();
 
+  let skippedGames = 0;
+
   for (const gameId of gameDirs) {
     const datasetPath = resolve(gamesDir, gameId, "training-dataset.json");
     if (!existsSync(datasetPath)) continue;
 
     const dataset = JSON.parse(readFileSync(datasetPath, "utf-8"));
     const rows: TrainingDatasetRow[] = dataset.rows;
+
+    // Schema guard: skip datasets where rows use the old flat schema (missing features object).
+    // Old schema rows have evalCp/swingCp/moverIsBlack at top-level without a nested features object.
+    if (rows.length > 0 && !("features" in rows[0])) {
+      console.warn(
+        `[targets] skipping ${gameId}: old flat-row schema detected (no features object). Regenerate from PGN to update.`
+      );
+      skippedGames++;
+      continue;
+    }
+
     const result = buildGameTrainingTargets(rows, treeParams, topN);
     const outDir = getIntelligenceOutputDir(gameId);
     mkdirSync(outDir, { recursive: true });
@@ -111,7 +124,7 @@ export function generateTrainingTargets(topN = parseInt(process.env.TOP_N ?? "10
   }
 
   console.log("\n[targets] == generation complete ==");
-  console.log(`[targets] games processed: ${gameDirs.length}`);
+  console.log(`[targets] games processed: ${gameDirs.length - skippedGames} (${skippedGames} skipped — old schema)`);
   console.log(`[targets] total positions: ${totalPositions}`);
   console.log(`[targets] total candidates: ${totalCandidates}`);
   console.log(`[targets] total targets: ${totalTargets}`);

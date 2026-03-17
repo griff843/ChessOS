@@ -149,15 +149,15 @@ export function ImportAnalyzePanel({ overview, results, repairQueue }: ImportAna
               Add `.pgn` files, let the local worker analyze them with Stockfish, and then move straight into Sessions, Dashboard, or Coach without leaving the app.
             </p>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
-              <div className="rounded-xl bg-white/70 px-4 py-3 backdrop-blur">
+              <div className="rounded-xl bg-surface-elevated px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Configured folder</p>
                 <p className="mt-1 font-mono text-xs text-text-primary">{overview.sourceDirDisplay}</p>
               </div>
-              <div className="rounded-xl bg-white/70 px-4 py-3 backdrop-blur">
+              <div className="rounded-xl bg-surface-elevated px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Accepted format</p>
                 <p className="mt-1 text-sm font-medium text-text-primary">{overview.acceptedFormats.join(", ")}</p>
               </div>
-              <div className="rounded-xl bg-white/70 px-4 py-3 backdrop-blur">
+              <div className="rounded-xl bg-surface-elevated px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Engine</p>
                 <p className="mt-1 text-sm font-medium text-text-primary">{overview.engineReady ? "Stockfish ready" : "Needs setup"}</p>
               </div>

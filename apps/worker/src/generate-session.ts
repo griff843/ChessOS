@@ -97,8 +97,14 @@ function main(): void {
     .split("\n")
     .filter((l) => l.length > 0);
 
-  const exercises: TrainingExercise[] = lines.map((l) => JSON.parse(l));
-  console.log(`[session] loaded ${exercises.length} exercises`);
+  const allExercises: TrainingExercise[] = lines.map((l) => JSON.parse(l));
+  // Filter to hero-only: only train on the player's own mistakes
+  const exercises = allExercises.filter(
+    (ex) => !ex.perspective || ex.perspective === "hero"
+  );
+  console.log(
+    `[session] loaded ${allExercises.length} exercises, ${exercises.length} hero-perspective`
+  );
 
   // 2. Compute difficulty calibration
   const scores = exercises.map((ex) => ex.explanation.difficultyScore);

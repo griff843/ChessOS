@@ -12,7 +12,9 @@
     "lint": "pnpm -r lint",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test tests/smoke",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "audit:ux": "node scripts/ux-audit.mjs",
+    "ai:context": "node scripts/ai-context.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.3.5",

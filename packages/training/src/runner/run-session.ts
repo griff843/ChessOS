@@ -60,6 +60,7 @@ export function enrichExercise(
     ply: sessionEx.ply,
     fen: sessionEx.fen,
     sideToMove: sessionEx.sideToMove,
+    heroColor: full.heroColor ?? null,
     phase: sessionEx.phase,
     playedMoveSan: sessionEx.playedMoveSan,
     bestMoveSan: full.engineAnswer.bestMoveSan,

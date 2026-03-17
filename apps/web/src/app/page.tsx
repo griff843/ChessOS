@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import {
   loadLearnerOverview,
   loadTrendReport,
@@ -38,6 +38,7 @@ import { ThemeTrendChart } from "@/components/charts/theme-trend-chart";
 import { ImprovementReport } from "@/components/progress/improvement-report";
 import { MasteryChart } from "@/components/charts/mastery-chart";
 import { TrainingWorkflowGuide } from "@/components/onboarding/training-workflow-guide";
+import { DashboardHeroCta } from "@/components/dashboard/dashboard-hero-cta";
 import { formatPercent, formatCategory, formatRelativeDate } from "@/lib/utils";
 import { buildProgressReport } from "@/lib/progress-engine";
 import {
@@ -55,6 +56,39 @@ import {
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+const INTERNAL_ID_LABELS: Record<string, string> = {
+  endgame_technique: "Endgame Technique",
+  tactical_pattern_recognition: "Tactical Pattern Recognition",
+  tactical_awareness: "Tactical Awareness",
+  king_safety: "King Safety",
+  material_loss: "Material Loss",
+  back_rank: "Back Rank",
+  opening_theory: "Opening Theory",
+  calculation: "Calculation",
+  positional_play: "Positional Play",
+  unstable_ratio: "instability rate",
+  worsening_count: "declining themes",
+  Supporting_signals: "Key signals",
+};
+
+function humanizeId(id: string): string {
+  return INTERNAL_ID_LABELS[id] ?? id.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function humanizeObjectiveText(text: string): string {
+  let result = text
+    .replace(/Escalation verdict is none/gi, "Hold current objective")
+    .replace(/intervention memory score/gi, "momentum score")
+    .replace(/blocked-gate pressure/gi, "curriculum pressure")
+    .replace(/recurrence pressure/gi, "pattern recurrence")
+    .replace(/review burden impact/gi, "review load")
+    .replace(/Last trained at never/gi, "Not yet trained");
+  for (const [id, label] of Object.entries(INTERNAL_ID_LABELS)) {
+    result = result.replace(new RegExp(`\\b${id}\\b`, "g"), label);
+  }
+  return result;
+}
 
 function StepRow({
   step,
@@ -222,17 +256,41 @@ export default async function DashboardPage() {
   const objectiveMix = objective?.objectiveExerciseMix;
   const masteredPct = masteryTotal > 0 ? (overview.masteryDistribution.mastered / masteryTotal) * 100 : 0;
 
+  const objectiveDisplayName = objective ? humanizeId(objective.currentObjective) : undefined;
+
   return (
     <>
       <PageHeader title="Dashboard" subtitle={`Last updated ${formatRelativeDate(overview.generatedAt)}`} />
+
+      <DashboardHeroCta
+        objectiveName={objectiveDisplayName}
+        canStudy={readiness.canStudy}
+      />
+
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: "View Games", href: "/games" },
+          { label: "Coach Report", href: "/coach" },
+          { label: "Repertoire", href: "/repertoire" },
+          { label: "History", href: "/history" },
+        ].map((item) => (
+          <a
+            key={item.href}
+            href={item.href}
+            className="flex items-center justify-center rounded-lg border border-border bg-surface-elevated px-3 py-3 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
 
       {objective && (
         <div className="mb-6 rounded-xl border border-accent/20 bg-accent-muted px-6 py-5">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-accent">Current Objective</p>
-              <p className="mt-1 text-sm font-semibold text-text-primary">{objective.currentObjective.replace(/_/g, " ")}</p>
-              <p className="mt-1 text-xs text-text-secondary">{objective.objectiveReason}</p>
+              <p className="mt-1 text-sm font-semibold text-text-primary">{humanizeId(objective.currentObjective)}</p>
+              <p className="mt-1 text-xs text-text-secondary">{humanizeObjectiveText(objective.objectiveReason)}</p>
             </div>
             <div className="text-right text-xs text-text-muted">
               <p>
@@ -277,13 +335,13 @@ export default async function DashboardPage() {
             <div className="mt-3 rounded-lg bg-surface-elevated px-3 py-3">
               <p className="text-xs font-medium text-text-primary">Objective Escalation</p>
               <p className="mt-1 text-[11px] text-text-muted">Escalation Verdict: {objectiveEscalation.escalationVerdict.replace(/_/g, " ")} - {objectiveEscalation.escalationStrength}</p>
-              <p className="mt-1 text-[11px] text-text-muted">{objectiveEscalation.escalationReason}</p>
-              <p className="mt-1 text-[11px] text-text-muted">Next action recommendation: {objectiveEscalation.explanation}</p>
+              <p className="mt-1 text-[11px] text-text-muted">{humanizeObjectiveText(objectiveEscalation.escalationReason)}</p>
+              <p className="mt-1 text-[11px] text-text-muted">Next action recommendation: {humanizeObjectiveText(objectiveEscalation.explanation)}</p>
               {objectiveEscalation.recommendedObjectivePhaseChange && (
                 <p className="mt-1 text-[11px] text-text-muted">Phase-change rationale: {objectiveEscalation.recommendedObjectivePhaseChange.reason}</p>
               )}
               {objectiveEscalation.recommendedNextObjective && (
-                <p className="mt-1 text-[11px] text-text-muted">Switch rationale: {objectiveEscalation.recommendedNextObjective.replace(/_/g, " ")}</p>
+                <p className="mt-1 text-[11px] text-text-muted">Switch rationale: {humanizeId(objectiveEscalation.recommendedNextObjective)}</p>
               )}
             </div>
           )}
@@ -300,9 +358,9 @@ export default async function DashboardPage() {
           {objectiveCoaching && (
             <div className="mt-3 rounded-lg bg-surface-elevated px-3 py-3">
               <p className="text-xs font-medium text-text-primary">Intervention Reason</p>
-              <p className="mt-1 text-[11px] text-text-muted">{objectiveCoaching.explanation}</p>
+              <p className="mt-1 text-[11px] text-text-muted">{humanizeObjectiveText(objectiveCoaching.explanation)}</p>
               {objectiveCoaching.compareWindows[0] && (
-                <p className="mt-1 text-[11px] text-text-muted">Compare Window: {objectiveCoaching.compareWindows[0].summary}</p>
+                <p className="mt-1 text-[11px] text-text-muted">Compare Window: {humanizeObjectiveText(objectiveCoaching.compareWindows[0].summary)}</p>
               )}
             </div>
           )}
@@ -312,22 +370,22 @@ export default async function DashboardPage() {
               <p className="mt-1 text-[11px] text-text-muted">
                 {interventionEffectiveness.priorInterventionType.replace(/_/g, " ")} was {interventionEffectiveness.interventionOutcome.replace(/_/g, " ")} · {interventionEffectiveness.outcomeStrength}
               </p>
-              <p className="mt-1 text-[11px] text-text-muted">{interventionEffectiveness.narrativeSummaryData.summary}</p>
+              <p className="mt-1 text-[11px] text-text-muted">{humanizeObjectiveText(interventionEffectiveness.narrativeSummaryData.summary)}</p>
             </div>
           )}
           {objectivePortfolio && (
             <div className="mt-3 rounded-lg bg-surface-elevated px-3 py-3">
               <p className="text-xs font-medium text-text-primary">Objective Portfolio</p>
-              <p className="mt-1 text-[11px] text-text-muted">Active objective: {objectivePortfolio.activeObjective.replace(/_/g, " ")} - {objectivePortfolio.portfolioSummary}</p>
+              <p className="mt-1 text-[11px] text-text-muted">Active objective: {humanizeId(objectivePortfolio.activeObjective)} - {objectivePortfolio.portfolioSummary}</p>
               <div className="mt-2 space-y-1">
                 {objectivePortfolio.rankedObjectives.slice(0, 3).map((entry, index) => (
                   <p key={entry.objectiveKey} className="text-[11px] text-text-muted">
-                    Rank {index + 1}: {entry.objectiveKey.replace(/_/g, " ")} - priority {entry.portfolioPriority.toFixed(2)} - share {entry.trainingShare.toFixed(2)} - {entry.portfolioStatus.replace(/_/g, " ")}
+                    Rank {index + 1}: {humanizeId(entry.objectiveKey)} - priority {entry.portfolioPriority.toFixed(2)} - share {entry.trainingShare.toFixed(2)} - {entry.portfolioStatus.replace(/_/g, " ")}
                   </p>
                 ))}
                 {objectivePortfolio.rotationDecisions.slice(0, 1).map((decision) => (
                   <p key={decision.objectiveKey} className="text-[11px] text-text-muted">
-                    Rotation Decision: {decision.objectiveKey.replace(/_/g, " ")} - {decision.action.replace(/_/g, " ")} - share {decision.trainingShare.toFixed(2)}
+                    Rotation Decision: {humanizeId(decision.objectiveKey)} - {decision.action.replace(/_/g, " ")} - share {decision.trainingShare.toFixed(2)}
                   </p>
                 ))}
               </div>
@@ -339,12 +397,12 @@ export default async function DashboardPage() {
               <p className="mt-1 text-[11px] text-text-muted">
                 Next action: {interventionMemory.nextActionRecommendation.action.replace(/_/g, " ")} {interventionMemory.nextActionRecommendation.interventionType?.replace(/_/g, " ") ?? ""}
               </p>
-              <p className="mt-1 text-[11px] text-text-muted">{interventionMemory.nextActionRecommendation.reason}</p>
+              <p className="mt-1 text-[11px] text-text-muted">{humanizeObjectiveText(interventionMemory.nextActionRecommendation.reason)}</p>
               <p className="mt-1 text-[11px] text-warning">Repeated Pattern Warning: {interventionMemory.repeatedPatternWarnings[0] ?? "none detected"}</p>
               <div className="mt-2 space-y-1">
                 {interventionMemory.recentEpisodes.slice(0, 3).map((episode, index) => (
                   <p key={episode.interventionEpisodeId} className="text-[11px] text-text-muted">
-                    Episode {index + 1}: {episode.interventionType.replace(/_/g, " ")} was {episode.outcome.replace(/_/g, " ")} · {episode.compareSnapshot.summary}
+                    Episode {index + 1}: {episode.interventionType.replace(/_/g, " ")} was {episode.outcome.replace(/_/g, " ")} · {humanizeObjectiveText(episode.compareSnapshot.summary)}
                   </p>
                 ))}
               </div>
@@ -491,7 +549,7 @@ export default async function DashboardPage() {
               items={overview.focusRecommendations.map((f) => ({
                 rank: f.rank,
                 category: formatCategory(f.category),
-                reason: f.reason,
+                reason: humanizeObjectiveText(f.reason),
                 score: f.focusScore,
               }))}
             />
@@ -550,7 +608,7 @@ export default async function DashboardPage() {
                     <p className="text-sm font-medium text-text-primary">{entry.openingName}</p>
                     <Badge variant="warning">{entry.theme.replace(/_/g, " ")}</Badge>
                   </div>
-                  <p className="mt-1 text-xs text-text-muted">Concepts: {entry.conceptMappings.join(", ")}</p>
+                  <p className="mt-1 text-xs text-text-muted">Concepts: {entry.conceptMappings.map(humanizeId).join(", ")}</p>
                 </div>
               ))}
             </div>
@@ -735,7 +793,7 @@ export default async function DashboardPage() {
                     <div>
                       <p className="text-sm font-medium text-text-primary">{entry.conceptName}</p>
                       <p className="mt-1 text-xs text-text-muted">
-                        {entry.prerequisiteGaps.length > 0 ? `Needs ${entry.prerequisiteGaps.join(", ")}` : "No prerequisite block detected"}
+                        {entry.prerequisiteGaps.length > 0 ? `Needs ${entry.prerequisiteGaps.map(humanizeId).join(", ")}` : "No prerequisite block detected"}
                       </p>
                     </div>
                     <Badge variant="warning">Priority {entry.reviewPriority.toFixed(2)}</Badge>
@@ -760,7 +818,7 @@ export default async function DashboardPage() {
               ))}
               {conceptState.clusterWeaknesses.length > 0 && (
                 <div className="rounded-lg border border-border-subtle bg-surface px-4 py-3 text-xs text-text-muted">
-                  Cluster under pressure: {conceptState.clusterWeaknesses[0].cluster} ({conceptState.clusterWeaknesses[0].concepts.join(", ")})
+                  Cluster under pressure: {conceptState.clusterWeaknesses[0].cluster} ({conceptState.clusterWeaknesses[0].concepts.map(humanizeId).join(", ")})
                 </div>
               )}
             </div>

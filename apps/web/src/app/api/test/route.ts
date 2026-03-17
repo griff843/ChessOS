@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   try {
     switch (action) {
       case "generateNewSession":
-        return NextResponse.json(await generateNewSession(params.perspective));
+        return NextResponse.json(await generateNewSession(params.perspective, params.reviewRequest));
 
       case "refreshInsights":
         return NextResponse.json(await refreshInsights());

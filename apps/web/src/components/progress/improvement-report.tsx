@@ -43,7 +43,7 @@ export function ImprovementReport({ report }: ImprovementReportProps) {
               </div>
             ))
           ) : (
-            <p className="text-sm text-text-secondary">Need at least two sessions per theme to measure improvement.</p>
+            <p className="text-sm text-text-secondary">Keep training — improvement trends appear after a few sessions.</p>
           )}
         </div>
 

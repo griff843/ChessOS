@@ -55,6 +55,8 @@ export interface ExerciseView {
   exerciseId: string;
   fen: string;
   sideToMove: "white" | "black";
+  /** The player's color — used for board orientation. Null for legacy exercises. */
+  heroColor: "white" | "black" | null;
   phase: string;
   lessonCategory: string;
   difficultyEstimate: string;

@@ -57,7 +57,7 @@ import type {
   LearningModelArtifact,
 } from "./types";
 import type { ImportAnalysisOverview, ImportAnalysisStatus } from "./import-types";
-import type { ConceptGraphArtifact, ConceptStateReportArtifact, GameLossDiagnosis } from "./types";
+import type { ConceptGraphArtifact, ConceptStateReportArtifact, GameLossDiagnosis, TargetedSessionSummary } from "./types";
 import type { OpeningReportArtifact, OpeningMistakeArtifact, RepertoireDrillEventArtifact, RepertoireDrillMemoryArtifact, RepertoireDrillQueueArtifact, RepertoireDrillSessionSummaryArtifact, RepertoireMapArtifact, RepertoireRepairArtifact, RepertoireRepairOutcomesArtifact, RepertoireRepairQueueArtifact, RepertoireReviewArtifact, RepertoireTransferArtifact, RepertoireTransferCoachingArtifact } from "./types";
 import { isConceptGraphArtifact, isConceptStateReportArtifact } from "./validators";
 import { isOpeningReportArtifact, isOpeningMistakeArtifactList, isRepertoireDrillEventArtifactList, isRepertoireDrillMemoryArtifact, isRepertoireDrillQueueArtifact, isRepertoireDrillSessionSummaryArtifactList, isRepertoireMapArtifact, isRepertoireRepairArtifact, isRepertoireRepairOutcomesArtifact, isRepertoireRepairQueueArtifact, isRepertoireReviewArtifact, isRepertoireTransferArtifact, isRepertoireTransferCoachingArtifact, isGameLossDiagnosis } from "./validators";
@@ -645,7 +645,80 @@ export async function loadGameMoveSans(gameId: string): Promise<string[] | null>
   }
 }
 
+/**
+ * Load a ply→FEN map from the training dataset for a game.
+ * Used to resolve board positions for contributing factors.
+ */
+export async function loadGamePlyFenMap(gameId: string): Promise<Record<number, string>> {
+  const path = join(OUT, "games", gameId, "training-dataset.json");
+  try {
+    const raw = await readFile(path, "utf-8");
+    const parsed: unknown = JSON.parse(raw);
+    let rowsArray: unknown[] | null = null;
+    if (Array.isArray(parsed)) {
+      rowsArray = parsed;
+    } else if (
+      parsed !== null &&
+      typeof parsed === "object" &&
+      "rows" in parsed &&
+      Array.isArray((parsed as { rows: unknown }).rows)
+    ) {
+      rowsArray = (parsed as { rows: unknown[] }).rows;
+    }
+    if (!rowsArray) return {};
+    const map: Record<number, string> = {};
+    for (const r of rowsArray) {
+      if (r !== null && typeof r === "object" && "ply" in r && "fen" in r) {
+        const row = r as { ply: unknown; fen: unknown };
+        if (typeof row.ply === "number" && typeof row.fen === "string") {
+          map[row.ply] = row.fen;
+        }
+      }
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
 
+/**
+ * Load minimal summaries of sessions that included reviewTargeting metadata.
+ * Used by evaluateCoachingMemory to determine whether targeted training
+ * was launched for a given repair target.
+ */
+export async function loadTargetedSessionSummaries(): Promise<TargetedSessionSummary[]> {
+  const sessionsDir = join(OUT, "sessions");
+  try {
+    const entries = await readdir(sessionsDir, { withFileTypes: true });
+    const summaries: TargetedSessionSummary[] = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      try {
+        const raw = await readFile(
+          join(sessionsDir, entry.name, "study-session.json"),
+          "utf-8"
+        );
+        const session = JSON.parse(raw);
+        const targeting = session?.metadata?.reviewTargeting;
+        if (targeting) {
+          summaries.push({
+            sessionId: entry.name,
+            createdAt: session.metadata?.createdAt ?? session.createdAt ?? "",
+            primaryTarget: targeting.primaryTarget,
+            boostStrength: targeting.boostStrength,
+          });
+        }
+      } catch {
+        // Skip malformed session artifacts.
+      }
+    }
+    return summaries.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  } catch {
+    return [];
+  }
+}
 
 
 

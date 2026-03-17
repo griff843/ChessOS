@@ -26,10 +26,14 @@ const CONFIDENCE_VARIANT: Record<
   low: "muted",
 };
 
-const MODE_LABELS: Record<BranchRepairMode, string> = {
-  line_recall: "Drill the line",
-  concept_review: "Review the concepts",
-  family_study: "Study the opening family",
+// CTA label and style per repair mode
+const MODE_CTA: Record<
+  BranchRepairMode,
+  { label: string; primary: boolean }
+> = {
+  line_recall:    { label: "Drill This Line",      primary: true },
+  concept_review: { label: "Review in Repertoire", primary: false },
+  family_study:   { label: "Study Opening Family", primary: false },
 };
 
 // ── Deviation indicator ──────────────────────────────────────────────
@@ -92,6 +96,8 @@ export function OpeningBranchRepair({ branchRepair }: OpeningBranchRepairProps) 
     ? `/repertoire?preferredLineId=${branchRepair.drillLineId}`
     : "/repertoire";
 
+  const modeCta = MODE_CTA[branchRepair.repairMode];
+
   return (
     <div className="mt-6 flex items-start gap-3">
       <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" />
@@ -137,28 +143,37 @@ export function OpeningBranchRepair({ branchRepair }: OpeningBranchRepairProps) 
               {branchRepair.explanation}
             </p>
 
-            {/* Repair mode + drill link */}
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <span className="text-xs text-text-secondary">
-                Recommended:{" "}
-                <strong className="text-text-primary">
-                  {MODE_LABELS[branchRepair.repairMode]}
-                </strong>
-              </span>
+            {/* Repair action button */}
+            <div className="mt-3">
               <Link
                 href={drillHref}
-                className="flex items-center gap-1 text-xs text-accent hover:underline"
+                className={
+                  modeCta.primary
+                    ? "inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-accent/90"
+                    : "inline-flex items-center gap-2 rounded-lg border border-border bg-surface-elevated px-3 py-2 text-xs font-medium text-text-primary transition-colors hover:bg-surface-hover"
+                }
               >
-                Drill this line
+                {modeCta.label}
                 <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </>
         ) : (
-          /* Graceful fallback */
-          <p className="mt-2 text-xs leading-relaxed text-text-muted">
-            {branchRepair.explanation}
-          </p>
+          /* Graceful fallback — explanation + link to general repertoire page */
+          <>
+            <p className="mt-2 text-xs leading-relaxed text-text-muted">
+              {branchRepair.explanation}
+            </p>
+            <div className="mt-3">
+              <Link
+                href="/repertoire"
+                className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+              >
+                Browse Repertoire Lines
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </div>
