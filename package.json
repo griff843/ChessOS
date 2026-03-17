@@ -4,14 +4,25 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.29.3",
   "scripts": {
+    "start": "node scripts/dev-web.mjs",
     "build": "pnpm -r build",
-    "dev:web": "pnpm --filter web dev",
+    "dev:web": "node scripts/dev-web.mjs",
     "dev:worker": "pnpm --filter worker dev",
     "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test tests/smoke",
+    "test:e2e:headed": "playwright test --headed",
+    "audit:ux": "node scripts/ux-audit.mjs",
+    "ai:context": "node scripts/ai-context.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.3.5",
+    "@playwright/test": "^1.58.2",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "pgn-parser": "^2.2.1"
   }
 }

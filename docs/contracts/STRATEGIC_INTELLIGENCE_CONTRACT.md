@@ -1,0 +1,168 @@
+# Strategic Intelligence Contract
+
+**Sprint**: M12C
+**Package**: `packages/training/src/strategic/`
+
+## Purpose
+
+Activates intelligence foundations (trend tracking, mistake patterns, review scheduling, adaptive weighting) so they meaningfully improve session targeting, review prioritization, difficulty adaptation, and provide transparency about engine decisions.
+
+## Artifact Types
+
+### PatternIntelligence
+
+Cross-tabulation of performance by category x difficulty, recurrence scoring per category, eval loss trends, and top vulnerability identification.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `crossTable` | `CrossCell[]` | Performance cells: category x difficulty with accuracy/missRate |
+| `recurrenceEntries` | `RecurrenceEntry[]` | Per-category recurrence analysis |
+| `recurringWeaknesses` | `string[]` | Categories with recurrenceScore >= 0.4 |
+| `topVulnerability` | `{ category, difficulty, missRate } \| null` | Highest missRate cell among recurring categories with seenCount >= 3 |
+
+### ReadinessForecast
+
+Three-state readiness model derived from measured signals.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `state` | `ReadinessState` | `ready_to_expand`, `hold_steady`, or `repair_mode` |
+| `signals` | `ReadinessSignal[]` | 5 computed signals with pass/fail |
+| `reason` | `string` | Human-readable explanation of state |
+
+### CompositionRationale
+
+Per-exercise transparency for session composition decisions.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sessionId` | `string` | Session this explains |
+| `readinessState` | `ReadinessState` | State at time of composition |
+| `slots` | `CompositionSlot[]` | Per-exercise source classification |
+| `explanation` | `string` | Summary explanation |
+
+### IntelligenceReport
+
+Assembly artifact combining readiness, pattern summary, and actionable recommendations.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `readiness` | `ReadinessForecast` | Current readiness state |
+| `patternSummary` | object | Recurring count, top weakness, top vulnerability |
+| `recommendations` | `string[]` | Actionable strategy recommendations |
+
+## Scoring Formulas
+
+### Recurrence Score (per category)
+
+```
+recurrenceScore = persistenceFactor   x 0.35
+               + directionFactor      x 0.25
+               + reviewBurdenFactor   x 0.20
+               + frequencyFactor      x 0.20
+
+persistenceFactor  = clamp(lifetimeMissRate, 0, 1)
+directionFactor    = { worsening: 1.0, stable: 0.5, improving: 0.0, insufficient_data: 0.25 }
+reviewBurdenFactor = min(overdueInCategory / max(seenInCategory, 1), 1.0)
+frequencyFactor    = min(incorrectInCategory / max(totalInCategory, 1), 1.0)
+```
+
+Severity classification:
+- `critical`: missRate >= 0.50, OR (worsening AND missRate >= 0.30)
+- `moderate`: missRate >= 0.25
+- `minor`: all others
+
+Recurring when `recurrenceScore >= 0.4`.
+
+### Readiness Signals (5)
+
+| Signal | Passes When |
+|--------|------------|
+| `recent_accuracy` | Overall recent accuracy >= 0.65 |
+| `worsening_count` | Worsening categories <= 1 |
+| `unstable_ratio` | unstable / totalSeen < 0.20 |
+| `overdue_ratio` | overdue / totalSeen < 0.15 |
+| `recurring_count` | Recurring weaknesses <= 1 |
+
+### Readiness State Derivation (first match)
+
+| State | Condition |
+|-------|-----------|
+| `repair_mode` | recurring >= 3 OR unstable_ratio >= 0.30 OR overdue_ratio >= 0.25 OR worsening >= 3 |
+| `hold_steady` | recurring >= 2 OR unstable_ratio >= 0.15 OR overdue_ratio >= 0.10 OR worsening >= 2 OR recent_accuracy < 0.65 |
+| `ready_to_expand` | default |
+
+### Enhanced Review Urgency (6-factor, when PatternIntelligence provided)
+
+```
+urgency = overdueFactor    x 0.25
+        + tierFactor       x 0.15
+        + historyFactor    x 0.15
+        + severityFactor   x 0.15
+        + recurrenceFactor x 0.15
+        + masteryGapFactor x 0.15
+```
+
+Without PatternIntelligence: original 3-factor formula (backward compatible).
+
+### Adaptive Ranking Recurrence Boost
+
+For non-due exercises when PatternIntelligence provided:
+```
+recurrenceBoost = recurrenceScore x 0.5
+adaptiveScore = targetPriority x combinedWeight + unstableBoost + recurrenceBoost
+```
+
+### Difficulty Policy Rules (ordered, first match wins)
+
+| # | Condition | Distribution | Reason |
+|---|-----------|-------------|--------|
+| R1 | `readiness.state === "repair_mode"` | 5/3/2 | Repair mode |
+| R2 | Recurring weakness at hard with crossTable missRate >= 0.50 | 4/4/2 | Recurring hard vulnerability |
+| E1 | Hard accuracy < 30% | 4/4/2 | Hard accuracy low *(existing)* |
+| E2 | Easy > 80% AND hard > 60% AND (readiness undefined OR ready_to_expand) | 2/4/4 | Expansion *(gated)* |
+| E3 | Medium < 30% | 2/5/3 | Medium accuracy low *(existing)* |
+| R3 | `readiness.state === "hold_steady"` | 3/5/2 | Hold steady |
+| Default | — | 3/4/3 | Balanced *(existing)* |
+
+## Artifact Paths
+
+| Artifact | Path | Generated By |
+|----------|------|-------------|
+| Pattern Intelligence | `out/strategic/pattern-intelligence.json` | Both flows |
+| Readiness Forecast | `out/strategic/readiness-forecast.json` | Both flows |
+| Intelligence Report | `out/strategic/intelligence-report.json` | Both flows |
+| Composition Rationale | `out/sessions/<id>/composition-rationale.json` | generateNewSession only |
+
+## Design Constraints
+
+1. **Backward compatible** — All modified functions use optional trailing parameters; existing worker callers unaffected
+2. **Deterministic** — All functions are pure; same inputs produce same outputs
+3. **No circular dependencies** — Pattern intelligence built from raw store/trend/queue, not from mistake patterns
+4. **Two-pass queue** — In refreshInsights: base queue first for pattern intelligence, enhanced queue second for all downstream
+5. **All intelligence in training package** — Web layer only loads and displays artifacts
+6. **No UI logic duplication** — Types mirrored but all computation in training package
+
+## Files
+
+### New
+- `packages/training/src/strategic/types.ts`
+- `packages/training/src/strategic/build-pattern-intelligence.ts`
+- `packages/training/src/strategic/build-readiness-forecast.ts`
+- `packages/training/src/strategic/build-composition-rationale.ts`
+- `packages/training/src/strategic/build-intelligence-report.ts`
+- `packages/training/src/strategic/index.ts`
+
+### Modified
+- `packages/training/src/scheduling/compute-review-urgency.ts` — Optional 6-factor formula
+- `packages/training/src/mastery/build-review-queue.ts` — Optional patternIntelligence param
+- `packages/training/src/trends/compute-difficulty-policy.ts` — 3 new readiness-aware rules
+- `packages/training/src/adaptive/rank-adaptive-candidates.ts` — Recurrence boost
+- `packages/training/src/sessions/select-session-exercises.ts` — Skip exercises without bestMoveSan
+- `packages/training/src/runner/run-session.ts` — Reject exercises without bestMoveSan in enrichment
+- `packages/training/src/index.ts` — Export strategic module
+- `apps/web/src/app/actions/generation.ts` — Wire intelligence into both flows
+- `apps/web/src/lib/artifacts.ts` — Strategic artifact loaders + health check
+- `apps/web/src/lib/validators.ts` — Strategic validators + fix TrendReport/ReviewReport array checks
+- `apps/web/src/lib/types.ts` — Strategic types
+- `apps/web/src/app/settings/page.tsx` — Strategic Intelligence artifact group

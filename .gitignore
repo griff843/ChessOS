@@ -1,6 +1,8 @@
 node_modules
 .pnpm-store
 .next
+.next-e2e
+.claude/worktrees/
 dist
 build
 coverage
@@ -8,5 +10,13 @@ coverage
 .env.local
 .env.*.local
 *.log
+*.tsbuildinfo
 out/tmp
+out/
 data/imports/*.pgn
+data/stockfish/
+test-results/
+playwright-report/
+*.test-bak
+data/pgn/*.pgn
+

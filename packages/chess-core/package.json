@@ -8,5 +8,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "echo chess-core lint pending"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0"
   }
 }
