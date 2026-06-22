@@ -29,6 +29,7 @@ const GRADE_LABELS: Record<string, string> = {
   exact_recall: "Exact recall",
   partial_recall: "Partial recall — check the move order",
   failed: "Not recalled — review this line soon",
+  failed_recall: "Not recalled — review this line soon",
 };
 
 /**

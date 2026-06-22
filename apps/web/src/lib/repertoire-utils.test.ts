@@ -108,6 +108,13 @@ test("failed → human label with action", () => {
   );
 });
 
+test("failed_recall → human label with action", () => {
+  assert.equal(
+    formatDrillGrade("failed_recall"),
+    "Not recalled — review this line soon"
+  );
+});
+
 test("unknown grade → capitalized fallback", () => {
   assert.equal(formatDrillGrade("some_new_grade"), "Some new grade");
 });

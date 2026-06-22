@@ -1,12 +1,12 @@
 {
   "issues": [
     {
-      "id": "CHESS-105C",
-      "title": "Extend pure helper coverage for repertoire utilities",
+      "id": "CHESS-106A",
+      "title": "Label failed repertoire recall consistently",
       "status": "open",
       "labels": ["ready"],
       "tier": "T2",
-      "lane_type": "verification",
+      "lane_type": "hygiene",
       "file_scope": [
         "apps/web/src/lib/repertoire-utils.ts",
         "apps/web/src/lib/repertoire-utils.test.ts"
