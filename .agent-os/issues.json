@@ -1,13 +1,13 @@
 {
   "issues": [
     {
-      "id": "CHESS-101",
-      "title": "First safe Agent-OS lane",
+      "id": "CHESS-102",
+      "title": "Add root verify script for Agent-OS lanes",
       "status": "open",
       "labels": ["ready"],
       "tier": "T2",
       "lane_type": "hygiene",
-      "file_scope": ["README.md"]
+      "file_scope": ["package.json"]
     }
   ]
 }

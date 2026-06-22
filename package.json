@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node scripts/dev-web.mjs",
     "build": "pnpm -r build",
+    "verify": "pnpm build",
     "dev:web": "node scripts/dev-web.mjs",
     "dev:worker": "pnpm --filter worker dev",
     "typecheck": "pnpm -r typecheck",
