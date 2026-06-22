@@ -55,6 +55,14 @@ export default async function SessionsPage() {
 
   const completedSessions = sessions.filter((s) => resultsMap.has(s.sessionId));
   const pendingSessions = sessions.filter((s) => !resultsMap.has(s.sessionId));
+  const sortedCompletedSessions = [...completedSessions].sort(
+    (a, b) =>
+      new Date(resultsMap.get(b.sessionId)!.completedAt).getTime() -
+      new Date(resultsMap.get(a.sessionId)!.completedAt).getTime()
+  );
+  const latestCompletedAt = sortedCompletedSessions[0]
+    ? resultsMap.get(sortedCompletedSessions[0].sessionId)!.completedAt
+    : null;
 
   return (
     <>
@@ -75,15 +83,7 @@ export default async function SessionsPage() {
           value={completedSessions.length}
           icon={<CheckCircle className="h-4 w-4" />}
           subtitle={
-            completedSessions.length > 0
-              ? `Last: ${formatRelativeDate(
-                  completedSessions.sort(
-                    (a, b) =>
-                      new Date(resultsMap.get(b.sessionId)!.completedAt).getTime() -
-                      new Date(resultsMap.get(a.sessionId)!.completedAt).getTime()
-                  )[0].createdAt
-                )}`
-              : undefined
+            latestCompletedAt ? `Last: ${formatRelativeDate(latestCompletedAt)}` : undefined
           }
         />
         <MetricCard
@@ -142,13 +142,7 @@ export default async function SessionsPage() {
       {completedSessions.length > 0 && (
         <SectionCard title="Completed Sessions" subtitle="Past study results">
           <div className="space-y-2">
-            {completedSessions
-              .sort(
-                (a, b) =>
-                  new Date(resultsMap.get(b.sessionId)!.completedAt).getTime() -
-                  new Date(resultsMap.get(a.sessionId)!.completedAt).getTime()
-              )
-              .map((session) => {
+            {sortedCompletedSessions.map((session) => {
                 const results = resultsMap.get(session.sessionId)!;
                 const correct = results.results?.filter((r) => r.result === "correct").length ?? 0;
                 const total = results.results?.length ?? session.exerciseCount;
@@ -193,7 +187,6 @@ export default async function SessionsPage() {
     </>
   );
 }
-
 
 
 

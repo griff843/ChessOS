@@ -1,15 +1,14 @@
 {
   "issues": [
     {
-      "id": "CHESS-106A",
-      "title": "Label failed repertoire recall consistently",
+      "id": "CHESS-107A",
+      "title": "Show completed session timestamp on Sessions dashboard",
       "status": "open",
       "labels": ["ready"],
       "tier": "T2",
       "lane_type": "hygiene",
       "file_scope": [
-        "apps/web/src/lib/repertoire-utils.ts",
-        "apps/web/src/lib/repertoire-utils.test.ts"
+        "apps/web/src/app/sessions/page.tsx"
       ]
     }
   ]
