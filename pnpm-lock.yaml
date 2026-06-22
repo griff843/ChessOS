@@ -171,7 +171,7 @@ packages:
       '@agent-os/core': 0.1.0
 
   '@agent-os/cli@file:../Agent-OS/.out/packages/agent-os-cli-0.1.0.tgz':
-    resolution: {integrity: sha512-FEeZX5shAGV5wzvEGXVYYJ2XtV/YGactHOIb++QGO62K5DUFJkROv0CHc5KTcQWWJa498UuyfKSn3AUZ6mqZnQ==, tarball: file:../Agent-OS/.out/packages/agent-os-cli-0.1.0.tgz}
+    resolution: {integrity: sha512-cq3R1k4/18hJiPBs95VPxwNew0e+icznR17hzwFDaR0wXpIV11H9LgVo/jcYqjgD8ku/E3Hc0DTSoczrq5mNOg==, tarball: file:../Agent-OS/.out/packages/agent-os-cli-0.1.0.tgz}
     version: 0.1.0
     engines: {node: '>=22'}
     hasBin: true
@@ -180,7 +180,7 @@ packages:
       '@agent-os/core': 0.1.0
 
   '@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz':
-    resolution: {integrity: sha512-b83WiW7Ui+n6LUbbvj4t7WqZrCl1WwjRlvfEgX35fmJKN1IJxaqwGcXDnbZtinu7ACUmwAOcYFl5kK4Z39gDjg==, tarball: file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz}
+    resolution: {integrity: sha512-ZeTvhxBbnrV0T/T9+q8Hf5FUDrOjqgU0kGX5cUNSRpnptCw3/Y8LGYvOaqYVzp3JDczze3muoeiFs8BLLVam6Q==, tarball: file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz}
     version: 0.1.0
     engines: {node: '>=22'}
 
