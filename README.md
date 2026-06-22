@@ -13,7 +13,7 @@ Agent-OS validation: CHESS-101 validates the first README-only Agent-OS lane in 
 
 ## Verification Gates
 
-For local setup and Agent-OS lane checks, see [Local Verification](./docs/runbooks/LOCAL_VERIFICATION.md).
+For local setup, Agent-OS lane checks, and issue queue examples, see [Local Verification](./docs/runbooks/LOCAL_VERIFICATION.md).
 
 Before committing a milestone slice:
 

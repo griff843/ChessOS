@@ -47,6 +47,7 @@ Do not commit `.out/`; it contains local Agent-OS worktrees and generated contro
 ## File scopes
 
 Use concrete file scopes only. Do not use directory scopes such as `docs/`.
+Use concrete files like `docs/runbooks/LOCAL_VERIFICATION.md`.
 
 Valid examples look like:
 
@@ -58,3 +59,93 @@ Valid examples look like:
   ]
 }
 ```
+
+## Issue queue examples
+
+README-only lane:
+
+```json
+{
+  "issues": [
+    {
+      "id": "CHESS-201",
+      "title": "Update README contributor note",
+      "status": "open",
+      "labels": ["ready"],
+      "tier": "T2",
+      "lane_type": "hygiene",
+      "file_scope": ["README.md"]
+    }
+  ]
+}
+```
+
+Docs runbook lane with concrete files:
+
+```json
+{
+  "issues": [
+    {
+      "id": "CHESS-202",
+      "title": "Clarify local verification runbook",
+      "status": "open",
+      "labels": ["ready"],
+      "tier": "T2",
+      "lane_type": "hygiene",
+      "file_scope": [
+        "README.md",
+        "docs/runbooks/LOCAL_VERIFICATION.md"
+      ]
+    }
+  ]
+}
+```
+
+Package script lane:
+
+```json
+{
+  "issues": [
+    {
+      "id": "CHESS-203",
+      "title": "Adjust root verification script",
+      "status": "open",
+      "labels": ["ready"],
+      "tier": "T2",
+      "lane_type": "hygiene",
+      "file_scope": ["package.json"]
+    }
+  ]
+}
+```
+
+Source-test lane with exact file paths:
+
+```json
+{
+  "issues": [
+    {
+      "id": "CHESS-204",
+      "title": "Add classifier utility coverage",
+      "status": "open",
+      "labels": ["ready"],
+      "tier": "T2",
+      "lane_type": "test",
+      "file_scope": [
+        "packages/training/src/coach/build-coach-overview.ts",
+        "packages/training/src/coach/build-coach-overview.test.ts"
+      ]
+    }
+  ]
+}
+```
+
+Invalid directory scope:
+
+```json
+{
+  "file_scope": ["docs/"]
+}
+```
+
+Use `docs/runbooks/LOCAL_VERIFICATION.md` instead of `docs/`, and list every source or test file explicitly.

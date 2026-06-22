@@ -1,8 +1,8 @@
 {
   "issues": [
     {
-      "id": "CHESS-103",
-      "title": "Add ChessOS local verification runbook",
+      "id": "CHESS-104",
+      "title": "Add Agent-OS issue queue examples for ChessOS",
       "status": "open",
       "labels": ["ready"],
       "tier": "T2",
