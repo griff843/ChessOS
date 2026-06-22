@@ -82,8 +82,8 @@ function buildExplanation(args: {
 }): string {
   if (!args.matched) {
     return args.diagnosisCategory === "opening_memory_failure"
-      ? "No specific seeded repertoire line matched this game's move order. Focus on broader line recall for the opening family played."
-      : "No specific seeded repertoire line matched this game. Focus on reviewing opening principles and structural concepts for the position type played.";
+      ? "No seeded repertoire line matched this game's move order. Review the opening family first, then add the recurring line to the repertoire map before drilling exact recall."
+      : "No seeded repertoire line matched this game. Review the opening plans and pawn structures for this position type before drilling a specific branch.";
   }
 
   const {

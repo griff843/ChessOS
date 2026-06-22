@@ -130,10 +130,28 @@ test("unrecognized moves → matched=false graceful fallback", () => {
   );
   assert.equal(result.matched, false);
   assert.equal(result.lineId, null);
-  assert.ok(result.explanation.length > 0, "explanation should describe fallback");
-  assert.ok(
-    result.explanation.includes("No specific seeded") || result.explanation.includes("no specific"),
-    `explanation should note no match, got: ${result.explanation}`
+  assert.equal(result.drillLineId, null);
+  assert.equal(result.repairMode, "line_recall");
+  assert.equal(
+    result.explanation,
+    "No seeded repertoire line matched this game's move order. Review the opening family first, then add the recurring line to the repertoire map before drilling exact recall."
+  );
+});
+
+// 4b. Unrecognized concept failure → matched=false with concept review copy
+test("unrecognized concept failure → matched=false with concept review copy", () => {
+  const result = buildRepertoireBranchRepair(
+    makeDiagnosis("opening_concept_failure"),
+    UNRECOGNIZED_MOVES,
+    REPERTOIRE_MAP
+  );
+  assert.equal(result.matched, false);
+  assert.equal(result.lineId, null);
+  assert.equal(result.drillLineId, null);
+  assert.equal(result.repairMode, "concept_review");
+  assert.equal(
+    result.explanation,
+    "No seeded repertoire line matched this game. Review the opening plans and pawn structures for this position type before drilling a specific branch."
   );
 });
 
