@@ -65,10 +65,24 @@ interface PgnHeaders {
   black?: string;
 }
 
+export function formatImportThemeLabel(key: string): string {
+  const known = THEME_LABELS[key];
+  if (known) return known;
+
+  return key
+    .trim()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
 function toThemeSummary(key: string, count: number): ImportThemeSummary {
   return {
     key,
-    label: THEME_LABELS[key] ?? key.replace(/_/g, " "),
+    label: formatImportThemeLabel(key),
     count,
     preset: THEME_PRESETS[key] ?? "mixed_improvement",
   };
@@ -115,7 +129,7 @@ function buildGameDetails(
     .map((target) => {
       const exercise = exerciseByPosition.get(target.positionId);
       const themeKey = exercise?.explanation.lessonCategory ?? target.targetType;
-      const theme = THEME_LABELS[themeKey] ?? themeKey.replace(/_/g, " ");
+      const theme = formatImportThemeLabel(themeKey);
       return {
         positionId: target.positionId,
         ply: target.ply,

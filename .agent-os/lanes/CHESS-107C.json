@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "issue_id": "CHESS-107C",
+  "lane_type": "hygiene",
+  "executor": "codex-cli",
+  "tier": "T2",
+  "worktree_path": "/home/griff843/code/ChessOS/.out/worktrees/codex__chess-107c-agent-os-loop",
+  "execution_location": {
+    "mode": "worktree",
+    "cwd": "/home/griff843/code/ChessOS/.out/worktrees/codex__chess-107c-agent-os-loop",
+    "package_install": "not_required",
+    "setup_command": null,
+    "main_checkout_control_only": true,
+    "dependency_policy": {
+      "package_install": "not_required",
+      "reason": "skip_install",
+      "setup_command": null,
+      "ran_install": false
+    }
+  },
+  "branch": "codex/chess-107c-agent-os-loop",
+  "base_branch": "main",
+  "commit_sha": null,
+  "pr_url": null,
+  "files_changed": [],
+  "file_scope_lock": [
+    "apps/web/src/lib/import-results.test.ts",
+    "apps/web/src/lib/import-results.ts"
+  ],
+  "expected_proof_paths": [
+    ".agent-os/proof/CHESS-107C/diff-summary.md",
+    ".agent-os/proof/CHESS-107C/verification.md"
+  ],
+  "status": "done",
+  "started_at": "2026-06-22T23:00:00.375Z",
+  "heartbeat_at": "2026-06-22T23:01:32.174Z",
+  "closed_at": "2026-06-22T23:01:32.174Z",
+  "blocked_by": [],
+  "preflight_token": ".out/ops/preflight/codex/chess-107c-agent-os-loop.json",
+  "created_by": "codex-cli",
+  "truth_check_history": [],
+  "reopen_history": []
+}
