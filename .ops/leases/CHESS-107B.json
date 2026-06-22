@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "issue_id": "CHESS-107B",
+  "branch": "codex/chess-107b-agent-os-loop",
+  "executor": "codex-cli",
+  "cwd": "/home/griff843/code/ChessOS/.out/worktrees/codex__chess-107b-agent-os-loop",
+  "worktree_path": "/home/griff843/code/ChessOS/.out/worktrees/codex__chess-107b-agent-os-loop",
+  "execution_location": {
+    "cwd": "/home/griff843/code/ChessOS/.out/worktrees/codex__chess-107b-agent-os-loop"
+  },
+  "file_scope_lock": [
+    "apps/web/src/lib/session-label.test.ts",
+    "apps/web/src/lib/session-label.ts"
+  ],
+  "heartbeat_at": "2026-06-22T19:36:57.489Z",
+  "expires_at": "2026-06-22T23:36:57.489Z",
+  "owner": {
+    "user": "griff843",
+    "host": "DESKTOP-GP6RM0V",
+    "pid": 2484891,
+    "session_id": "DESKTOP-GP6RM0V:2484891"
+  },
+  "status": "released",
+  "reclaim_history": [
+    {
+      "reclaimed_at": "2026-06-22T19:38:54.612Z",
+      "reclaimed_by": "agent-os",
+      "reason": "released: complete",
+      "previous_owner": {
+        "user": "griff843",
+        "host": "DESKTOP-GP6RM0V",
+        "pid": 2484891,
+        "session_id": "DESKTOP-GP6RM0V:2484891"
+      },
+      "previous_status": "active",
+      "last_heartbeat_at": "2026-06-22T19:36:57.489Z",
+      "locked_files": [
+        "apps/web/src/lib/session-label.test.ts",
+        "apps/web/src/lib/session-label.ts"
+      ],
+      "branch": "codex/chess-107b-agent-os-loop",
+      "branch_status": "released_by_owner",
+      "pr_status": "released_by_owner"
+    }
+  ]
+}

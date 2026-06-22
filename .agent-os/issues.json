@@ -1,14 +1,15 @@
 {
   "issues": [
     {
-      "id": "CHESS-107A",
-      "title": "Show completed session timestamp on Sessions dashboard",
+      "id": "CHESS-107B",
+      "title": "Add focused tests for session label derivation",
       "status": "open",
       "labels": ["ready"],
       "tier": "T2",
-      "lane_type": "hygiene",
+      "lane_type": "verification",
       "file_scope": [
-        "apps/web/src/app/sessions/page.tsx"
+        "apps/web/src/lib/session-label.ts",
+        "apps/web/src/lib/session-label.test.ts"
       ]
     }
   ]
