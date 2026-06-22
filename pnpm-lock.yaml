@@ -15,6 +15,15 @@ importers:
         specifier: ^2.2.1
         version: 2.2.1
     devDependencies:
+      '@agent-os/adapters':
+        specifier: file:/home/griff843/code/Agent-OS/.out/packages/agent-os-adapters-0.1.0.tgz
+        version: file:../Agent-OS/.out/packages/agent-os-adapters-0.1.0.tgz(@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz)
+      '@agent-os/cli':
+        specifier: file:/home/griff843/code/Agent-OS/.out/packages/agent-os-cli-0.1.0.tgz
+        version: file:../Agent-OS/.out/packages/agent-os-cli-0.1.0.tgz(@agent-os/adapters@file:../Agent-OS/.out/packages/agent-os-adapters-0.1.0.tgz(@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz))(@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz)
+      '@agent-os/core':
+        specifier: file:/home/griff843/code/Agent-OS/.out/packages/agent-os-core-0.1.0.tgz
+        version: file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz
       '@playwright/test':
         specifier: ^1.58.2
         version: 1.58.2
@@ -153,6 +162,27 @@ importers:
   packages/ui: {}
 
 packages:
+
+  '@agent-os/adapters@file:../Agent-OS/.out/packages/agent-os-adapters-0.1.0.tgz':
+    resolution: {integrity: sha512-ynPOk6bYgRpLy/+eYUSlSrICHz6OVdI8AOrA9O+ErTviEalKTFY4Ipj72laK1j40L37gK7fnl/IIHL234G/7JA==, tarball: file:../Agent-OS/.out/packages/agent-os-adapters-0.1.0.tgz}
+    version: 0.1.0
+    engines: {node: '>=22'}
+    peerDependencies:
+      '@agent-os/core': 0.1.0
+
+  '@agent-os/cli@file:../Agent-OS/.out/packages/agent-os-cli-0.1.0.tgz':
+    resolution: {integrity: sha512-FEeZX5shAGV5wzvEGXVYYJ2XtV/YGactHOIb++QGO62K5DUFJkROv0CHc5KTcQWWJa498UuyfKSn3AUZ6mqZnQ==, tarball: file:../Agent-OS/.out/packages/agent-os-cli-0.1.0.tgz}
+    version: 0.1.0
+    engines: {node: '>=22'}
+    hasBin: true
+    peerDependencies:
+      '@agent-os/adapters': 0.1.0
+      '@agent-os/core': 0.1.0
+
+  '@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz':
+    resolution: {integrity: sha512-b83WiW7Ui+n6LUbbvj4t7WqZrCl1WwjRlvfEgX35fmJKN1IJxaqwGcXDnbZtinu7ACUmwAOcYFl5kK4Z39gDjg==, tarball: file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz}
+    version: 0.1.0
+    engines: {node: '>=22'}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -1094,6 +1124,17 @@ packages:
     resolution: {integrity: sha512-SbPDPdDBYp+5MJHhBCAyI7wKM3d5ivekigc2Dk2s7pgbZ9wIgIBYGVw4zGHBml/qTFbexrofXW6Gu4noGxrOwQ==}
 
 snapshots:
+
+  '@agent-os/adapters@file:../Agent-OS/.out/packages/agent-os-adapters-0.1.0.tgz(@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz)':
+    dependencies:
+      '@agent-os/core': file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz
+
+  '@agent-os/cli@file:../Agent-OS/.out/packages/agent-os-cli-0.1.0.tgz(@agent-os/adapters@file:../Agent-OS/.out/packages/agent-os-adapters-0.1.0.tgz(@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz))(@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz)':
+    dependencies:
+      '@agent-os/adapters': file:../Agent-OS/.out/packages/agent-os-adapters-0.1.0.tgz(@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz)
+      '@agent-os/core': file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz
+
+  '@agent-os/core@file:../Agent-OS/.out/packages/agent-os-core-0.1.0.tgz': {}
 
   '@alloc/quick-lru@5.2.0': {}
 

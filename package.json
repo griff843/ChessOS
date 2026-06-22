@@ -17,8 +17,11 @@
     "ai:context": "node scripts/ai-context.mjs"
   },
   "devDependencies": {
-    "@types/node": "^25.3.5",
+    "@agent-os/adapters": "file:/home/griff843/code/Agent-OS/.out/packages/agent-os-adapters-0.1.0.tgz",
+    "@agent-os/cli": "file:/home/griff843/code/Agent-OS/.out/packages/agent-os-cli-0.1.0.tgz",
+    "@agent-os/core": "file:/home/griff843/code/Agent-OS/.out/packages/agent-os-core-0.1.0.tgz",
     "@playwright/test": "^1.58.2",
+    "@types/node": "^25.3.5",
     "typescript": "^5.9.3"
   },
   "dependencies": {

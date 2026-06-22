@@ -9,6 +9,8 @@ Single-user world-class chess improvement system for Griff.
 - Generated artifacts stay local by default (`out/`, caches, test outputs).
 - Each milestone should land as a vertical slice with compile and runtime proof.
 
+Agent-OS validation: CHESS-101 validates the first README-only Agent-OS lane in ChessOS.
+
 ## Verification Gates
 
 Before committing a milestone slice:

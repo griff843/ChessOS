@@ -3,6 +3,7 @@ node_modules
 .next
 .next-e2e
 .claude/worktrees/
+.out/
 dist
 build
 coverage
@@ -19,4 +20,3 @@ test-results/
 playwright-report/
 *.test-bak
 data/pgn/*.pgn
-
