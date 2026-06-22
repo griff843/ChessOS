@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "issue_id": "CHESS-105C",
+  "branch": "codex/chess-105c-agent-os-loop",
+  "executor": "codex-cli",
+  "cwd": "/home/griff843/code/ChessOS/.out/worktrees/codex__chess-105c-agent-os-loop",
+  "worktree_path": "/home/griff843/code/ChessOS/.out/worktrees/codex__chess-105c-agent-os-loop",
+  "execution_location": {
+    "cwd": "/home/griff843/code/ChessOS/.out/worktrees/codex__chess-105c-agent-os-loop"
+  },
+  "file_scope_lock": [
+    "apps/web/src/lib/repertoire-utils.test.ts",
+    "apps/web/src/lib/repertoire-utils.ts"
+  ],
+  "heartbeat_at": "2026-06-22T17:59:10.350Z",
+  "expires_at": "2026-06-22T21:59:10.350Z",
+  "owner": {
+    "user": "griff843",
+    "host": "DESKTOP-GP6RM0V",
+    "pid": 2354177,
+    "session_id": "DESKTOP-GP6RM0V:2354177"
+  },
+  "status": "released",
+  "reclaim_history": [
+    {
+      "reclaimed_at": "2026-06-22T18:00:29.677Z",
+      "reclaimed_by": "agent-os",
+      "reason": "released: complete",
+      "previous_owner": {
+        "user": "griff843",
+        "host": "DESKTOP-GP6RM0V",
+        "pid": 2354177,
+        "session_id": "DESKTOP-GP6RM0V:2354177"
+      },
+      "previous_status": "active",
+      "last_heartbeat_at": "2026-06-22T17:59:10.350Z",
+      "locked_files": [
+        "apps/web/src/lib/repertoire-utils.test.ts",
+        "apps/web/src/lib/repertoire-utils.ts"
+      ],
+      "branch": "codex/chess-105c-agent-os-loop",
+      "branch_status": "released_by_owner",
+      "pr_status": "released_by_owner"
+    }
+  ]
+}

@@ -70,8 +70,20 @@ test("undefined lineId → null", () => {
   assert.equal(findLineNameForId(undefined, repairEntries, drillEntries), null);
 });
 
+test("empty string lineId → null", () => {
+  assert.equal(findLineNameForId("", repairEntries, drillEntries), null);
+});
+
 test("empty queues → null", () => {
   assert.equal(findLineNameForId("scotch-main", [], []), null);
+});
+
+test("first matching repair entry wins when repair entries repeat", () => {
+  const repair = [
+    { lineId: "repeat", lineName: "First Repair" },
+    { lineId: "repeat", lineName: "Second Repair" },
+  ];
+  assert.equal(findLineNameForId("repeat", repair, []), "First Repair");
 });
 
 // ── formatDrillGrade ──────────────────────────────────────────────────────────
@@ -98,6 +110,14 @@ test("failed → human label with action", () => {
 
 test("unknown grade → capitalized fallback", () => {
   assert.equal(formatDrillGrade("some_new_grade"), "Some new grade");
+});
+
+test("unknown grade with repeated underscores preserves spacing fallback", () => {
+  assert.equal(formatDrillGrade("line__recall"), "Line  recall");
+});
+
+test("already capitalized unknown grade keeps first character", () => {
+  assert.equal(formatDrillGrade("Custom_grade"), "Custom grade");
 });
 
 test("empty string → empty string (edge case)", () => {
