@@ -1,13 +1,16 @@
 {
   "issues": [
     {
-      "id": "CHESS-102",
-      "title": "Add root verify script for Agent-OS lanes",
+      "id": "CHESS-103",
+      "title": "Add ChessOS local verification runbook",
       "status": "open",
       "labels": ["ready"],
       "tier": "T2",
       "lane_type": "hygiene",
-      "file_scope": ["package.json"]
+      "file_scope": [
+        "README.md",
+        "docs/runbooks/LOCAL_VERIFICATION.md"
+      ]
     }
   ]
 }
