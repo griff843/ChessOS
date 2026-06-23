@@ -257,6 +257,12 @@ export default async function DashboardPage() {
   const masteredPct = masteryTotal > 0 ? (overview.masteryDistribution.mastered / masteryTotal) * 100 : 0;
 
   const objectiveDisplayName = objective ? humanizeId(objective.currentObjective) : undefined;
+  const pendingSession = allSessions
+    .filter((session) => !allSessionResults.has(session.sessionId))
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )[0];
 
   return (
     <>
@@ -265,6 +271,14 @@ export default async function DashboardPage() {
       <DashboardHeroCta
         objectiveName={objectiveDisplayName}
         canStudy={readiness.canStudy}
+        pendingSession={
+          pendingSession
+            ? {
+                sessionId: pendingSession.sessionId,
+                exerciseCount: pendingSession.exerciseCount,
+              }
+            : null
+        }
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -886,7 +900,6 @@ export default async function DashboardPage() {
     </>
   );
 }
-
 
 
 

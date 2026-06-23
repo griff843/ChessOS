@@ -1,15 +1,15 @@
 {
   "issues": [
     {
-      "id": "CHESS-107D",
-      "title": "Clarify repertoire no-match repair copy",
+      "id": "CHESS-108A",
+      "title": "Resume pending session from dashboard hero",
       "status": "open",
       "labels": ["ready"],
       "tier": "T2",
       "lane_type": "hygiene",
       "file_scope": [
-        "packages/training/src/repair/build-repertoire-branch-repair.ts",
-        "packages/training/src/repair/build-repertoire-branch-repair.test.ts"
+        "apps/web/src/app/page.tsx",
+        "apps/web/src/components/dashboard/dashboard-hero-cta.tsx"
       ]
     }
   ]

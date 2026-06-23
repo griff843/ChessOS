@@ -2,15 +2,20 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { generateNewSession, refreshInsights } from "@/app/actions/generation";
-import { Play, RefreshCw, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
+import { Play, RefreshCw, Loader2, CheckCircle, AlertTriangle, ArrowRight } from "lucide-react";
 
 interface DashboardHeroCtaProps {
   objectiveName?: string;
   canStudy: boolean;
+  pendingSession?: {
+    sessionId: string;
+    exerciseCount: number;
+  } | null;
 }
 
-export function DashboardHeroCta({ objectiveName, canStudy }: DashboardHeroCtaProps) {
+export function DashboardHeroCta({ objectiveName, canStudy, pendingSession }: DashboardHeroCtaProps) {
   const router = useRouter();
   const [sessionPending, startSessionTransition] = useTransition();
   const [refreshPending, startRefreshTransition] = useTransition();
@@ -54,9 +59,18 @@ export function DashboardHeroCta({ objectiveName, canStudy }: DashboardHeroCtaPr
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-text-primary">
-            {objectiveName ? `Continue your ${objectiveName} work` : "Ready to train?"}
+            {pendingSession
+              ? "Resume your active session"
+              : objectiveName
+                ? `Continue your ${objectiveName} work`
+                : "Ready to train?"}
           </h2>
-          {objectiveName && (
+          {pendingSession ? (
+            <p className="mt-1 text-xs text-text-muted">
+              {pendingSession.exerciseCount} exercises waiting in{" "}
+              <span className="font-mono text-text-secondary">{pendingSession.sessionId}</span>
+            </p>
+          ) : objectiveName && (
             <p className="mt-1 text-xs text-text-muted">
               Targeting: <span className="font-medium text-text-secondary">{objectiveName}</span>
             </p>
@@ -76,19 +90,30 @@ export function DashboardHeroCta({ objectiveName, canStudy }: DashboardHeroCtaPr
             )}
             Refresh Insights
           </button>
-          <button
-            onClick={handleStartSession}
-            disabled={!canStudy || isPending}
-            className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:opacity-50"
-            title={!canStudy ? "Import and analyze games first" : undefined}
-          >
-            {sessionPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
+          {pendingSession ? (
+            <Link
+              href={`/study/${pendingSession.sessionId}`}
+              className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90"
+            >
               <Play className="h-4 w-4" />
+              Resume Session
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          ) : (
+            <button
+              onClick={handleStartSession}
+              disabled={!canStudy || isPending}
+              className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:opacity-50"
+              title={!canStudy ? "Import and analyze games first" : undefined}
+            >
+              {sessionPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+              {sessionPending ? "Generating..." : "Start Today's Session"}
+            </button>
             )}
-            {sessionPending ? "Generating..." : "Start Today's Session"}
-          </button>
         </div>
       </div>
       {feedback && (
