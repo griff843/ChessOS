@@ -1,15 +1,14 @@
 {
   "issues": [
     {
-      "id": "CHESS-108A",
-      "title": "Resume pending session from dashboard hero",
+      "id": "CHESS-108C",
+      "title": "Add completion next-step CTAs",
       "status": "open",
       "labels": ["ready"],
       "tier": "T2",
       "lane_type": "hygiene",
       "file_scope": [
-        "apps/web/src/app/page.tsx",
-        "apps/web/src/components/dashboard/dashboard-hero-cta.tsx"
+        "apps/web/src/components/study/completion-recap.tsx"
       ]
     }
   ]

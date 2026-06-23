@@ -352,32 +352,57 @@ export function CompletionRecap({
         </SectionCard>
       )}
 
-      <div className="flex gap-3">
-        <Link
-          href="/"
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-hover"
-        >
-          <Target className="h-4 w-4" />
-          Dashboard
-        </Link>
-        <Link
-          href="/history"
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-hover"
-        >
-          <Clock className="h-4 w-4" />
-          History
-        </Link>
-        <Link
-          href="/coach"
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-hover"
-        >
-          <TrendingUp className="h-4 w-4" />
-          Coach
-        </Link>
+      <SectionCard
+        title="Next Steps"
+        subtitle="Keep the training loop moving from here."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Link
+            href="/sessions"
+            className="flex items-center justify-between rounded-lg bg-accent px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+          >
+            <span className="flex items-center gap-2">
+              <ArrowRight className="h-4 w-4" />
+              Start next session
+            </span>
+            <span className="text-xs text-white/80">Continue training</span>
+          </Link>
+          <Link
+            href="/"
+            className="flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-hover"
+          >
+            <span className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Back to dashboard
+            </span>
+            <span className="text-xs text-text-muted">Review progress</span>
+          </Link>
+          <Link
+            href="/games"
+            className="flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-hover"
+          >
+            <span className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Review games
+            </span>
+            <span className="text-xs text-text-muted">Find new patterns</span>
+          </Link>
+          <Link
+            href="/coach"
+            className="flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-hover"
+          >
+            <span className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Open coach
+            </span>
+            <span className="text-xs text-text-muted">Plan the follow-up</span>
+          </Link>
+        </div>
+
         <button
           onClick={handleRefresh}
           disabled={refreshPending || refreshDone}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-accent/30 bg-surface px-4 py-3 text-sm font-medium text-accent transition-colors hover:bg-accent-muted disabled:opacity-50"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-accent/30 bg-surface px-4 py-3 text-sm font-medium text-accent transition-colors hover:bg-accent-muted disabled:opacity-50"
         >
           {refreshPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -387,20 +412,12 @@ export function CompletionRecap({
             <RefreshCw className="h-4 w-4" />
           )}
           {refreshPending
-            ? "Refreshing..."
+            ? "Refreshing insights..."
             : refreshDone
-              ? "Updated"
-              : "Refresh Insights"}
+              ? "Insights updated"
+              : "Refresh insights"}
         </button>
-        <Link
-          href="/sessions"
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
-        >
-          <ArrowRight className="h-4 w-4" />
-          Next Session
-        </Link>
-      </div>
+      </SectionCard>
     </div>
   );
 }
-
